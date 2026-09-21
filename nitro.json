@@ -1,0 +1,23 @@
+{
+  "cxxNamespace": ["nitrohinge"],
+  "ios": {
+    "iosModuleName": "NitroHinge"
+  },
+  "android": {
+    "androidNamespace": ["nitrohinge"],
+    "androidCxxLibName": "nitrohinge"
+  },
+  "autolinking": {
+    "NitroHinge": {
+      "ios": {
+        "language": "swift",
+        "implementationClassName": "NitroHinge"
+      },
+      "android": {
+        "language": "kotlin",
+        "implementationClassName": "NitroHinge"
+      }
+    }
+  },
+  "ignorePaths": ["node_modules"]
+}
