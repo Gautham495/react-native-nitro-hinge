@@ -1,15 +1,7 @@
 import { NitroModules } from 'react-native-nitro-modules';
 import { useEffect, useState } from 'react';
 import { PixelRatio } from 'react-native';
-import type {
-  Hinge,
-  HingeState,
-  WidthSizeClass,
-  HeightSizeClass,
-  FoldFeature,
-  Rect,
-  SafeInsets,
-} from './Hinge.nitro';
+import type { Hinge, HingeState } from './Hinge.nitro';
 
 // Re-export public types so consumers don't touch the .nitro.ts spec.
 export type {
