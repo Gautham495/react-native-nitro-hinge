@@ -381,19 +381,14 @@ what styling engines do.
 
 ## Roadmap
 
-- **v0.1.0-beta.1** (current) — iOS complete across all six Duo
+- **v1.0.0** (current) — iOS complete across all six Duo
   poses, size classes on iPad and iPhone, WindowInfoTracker wired
   on Android with correct cold-start values.
 - **v2.0.0** — Android fold-state fanout via
   WindowInfoTracker flow, verified on Pixel 10 Pro Fold and
   Samsung Z Fold emulators.
-- **v0.1.0** (target: iPhone Duo launch, Oct 23 2026) — stable
+- **v3.0.0** (target: iPhone Duo launch, Oct 23 2026) — stable
   release aligned with iOS 27.1 GM.
-- **v0.2** — Expo config plugin for zero-config integration in
-  Expo apps.
-- **v0.3** — Continuous hinge-angle sensor exposure for animation
-  use cases (currently `null`; consumers wire their own
-  SensorManager if they need it).
 
 ## Reference material
 

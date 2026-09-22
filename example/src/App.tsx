@@ -1,17 +1,9 @@
-import React, { useMemo } from 'react';
+import { useMemo } from 'react';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
 import {
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-import {
-  hinge,
   useHinge,
   font,
   space,
-  size,
   radius,
   responsive,
   isCompactWidth,
@@ -22,6 +14,7 @@ import {
   contentWidth,
   configureHinge,
 } from 'react-native-nitro-hinge';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 // Configure once at app start. If your design mocks were drawn at
 // 375pt (older iPhone), set that here. Default is 390.
@@ -111,23 +104,28 @@ export default function App() {
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Pane A</Text>
               <Text style={styles.cardBody}>
-                On phones this stacks. On tablets and unfolded foldables,
-                it sits side-by-side with Pane B. Works because
-                flexDirection reads from isWide().
+                On phones this stacks. On tablets and unfolded foldables, it
+                sits side-by-side with Pane B. Works because flexDirection reads
+                from isWide().
               </Text>
             </View>
             <View style={styles.card}>
               <Text style={styles.cardTitle}>Pane B</Text>
               <Text style={styles.cardBody}>
-                The maxWidth cap keeps text at a readable measure
-                (~560pt) so it doesn't stretch across the whole iPad.
+                The maxWidth cap keeps text at a readable measure (~560pt) so it
+                doesn't stretch across the whole iPad.
               </Text>
             </View>
           </View>
         </View>
 
         {state.foldFeatures.map((fold, i) => (
-          <HingeInfo key={i} fold={fold} index={i} total={state.foldFeatures.length} />
+          <HingeInfo
+            key={i}
+            fold={fold}
+            index={i}
+            total={state.foldFeatures.length}
+          />
         ))}
 
         <PosturePane />
@@ -140,7 +138,13 @@ export default function App() {
 // A block that shows current layout signals
 // -----------------------------------------------------------------
 
-function StatusBlock({ state, columns }: { state: ReturnType<typeof useHinge>; columns: number }) {
+function StatusBlock({
+  state,
+  columns,
+}: {
+  state: ReturnType<typeof useHinge>;
+  columns: number;
+}) {
   return (
     <View
       style={{
@@ -155,27 +159,18 @@ function StatusBlock({ state, columns }: { state: ReturnType<typeof useHinge>; c
         label="Window"
         value={`${Math.round(state.windowWidth)} × ${Math.round(state.windowHeight)}`}
       />
-      <Row
-        label="Content width"
-        value={`${Math.round(contentWidth())}`}
-      />
+      <Row label="Content width" value={`${Math.round(contentWidth())}`} />
       <Row
         label="Safe insets"
         value={`t${Math.round(state.safeInsets.top)} r${Math.round(state.safeInsets.right)} b${Math.round(state.safeInsets.bottom)} l${Math.round(state.safeInsets.left)}`}
       />
       <Row label="Font scale" value={state.fontScale.toFixed(2)} />
-      <Row
-        label="Columns for this width"
-        value={String(columns)}
-      />
+      <Row label="Columns for this width" value={String(columns)} />
       <Row
         label="isCompact / isWide"
         value={`${isCompactWidth()} / ${isWide()}`}
       />
-      <Row
-        label="Has active fold"
-        value={String(hasActiveFold())}
-      />
+      <Row label="Has active fold" value={String(hasActiveFold())} />
       <Row
         label="Book / Tabletop"
         value={`${isBookPosture()} / ${isTabletopPosture()}`}
@@ -186,7 +181,13 @@ function StatusBlock({ state, columns }: { state: ReturnType<typeof useHinge>; c
 
 function Row({ label, value }: { label: string; value: string }) {
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 }}>
+    <View
+      style={{
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        paddingVertical: 4,
+      }}
+    >
       <Text style={{ fontSize: font(14), color: '#666' }}>{label}</Text>
       <Text style={{ fontSize: font(14), fontWeight: '500' }}>{value}</Text>
     </View>
@@ -219,7 +220,13 @@ function HingeInfo({
         backgroundColor: '#fff3cd',
       }}
     >
-      <Text style={{ fontSize: font(16), fontWeight: '600', marginBottom: space(8) }}>
+      <Text
+        style={{
+          fontSize: font(16),
+          fontWeight: '600',
+          marginBottom: space(8),
+        }}
+      >
         {total > 1 ? `Fold ${index + 1} of ${total}` : 'Active fold detected'}
       </Text>
       <Row label="Orientation" value={fold.orientation} />
@@ -273,7 +280,9 @@ function PosturePane() {
 
   if (isBookPosture()) {
     return (
-      <View style={{ marginTop: space(24), flexDirection: 'row', gap: space(8) }}>
+      <View
+        style={{ marginTop: space(24), flexDirection: 'row', gap: space(8) }}
+      >
         <View
           style={{
             flex: 1,
