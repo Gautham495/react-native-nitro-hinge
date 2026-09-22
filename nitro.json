@@ -8,14 +8,14 @@
     "androidCxxLibName": "nitrohinge"
   },
   "autolinking": {
-    "NitroHinge": {
+    "Hinge": {
       "ios": {
         "language": "swift",
-        "implementationClassName": "NitroHinge"
+        "implementationClassName": "HybridHinge"
       },
       "android": {
         "language": "kotlin",
-        "implementationClassName": "NitroHinge"
+        "implementationClassName": "HybridHinge"
       }
     }
   },

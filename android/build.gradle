@@ -117,4 +117,17 @@ android {
 dependencies {
   implementation "com.facebook.react:react-android"
   implementation project(":react-native-nitro-modules")
+
+  implementation "org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1"
+ 
+  // Jetpack WindowManager: the whole point of the library.
+  // Latest stable as of 2026-09: 1.5.1 (from developer.android.com/jetpack/androidx/releases/window)
+  // Required version — androidx.window.core.layout.WindowSizeClass only exists in 1.4.0+.
+  implementation "androidx.window:window:1.5.1"
+  implementation "androidx.window:window-core:1.5.1"
+ 
+  // For WindowInsetsCompat inset reading.
+  implementation "androidx.core:core-ktx:1.13.1"
+
+
 }

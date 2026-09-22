@@ -1,12 +1,12 @@
 {
   "name": "react-native-nitro-hinge",
-  "version": "0.1.0",
-  "description": "Hinge",
+  "version": "1.0.0",
+  "description": "Native size class, safe insets, and hinge geometry for React Native. Nitro-backed. iOS + Android. One API for phones, tablets, foldables, tri-folds, iPhone Duo — and whatever ships next.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
   "exports": {
     ".": {
-      "react-native-nitro-hinge-source": "./src/index.tsx",
+      "react-native-nitro-hinge-source": "./src/index.ts",
       "types": "./lib/typescript/src/index.d.ts",
       "default": "./lib/module/index.js"
     },
@@ -41,14 +41,15 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "jest",
-    "release": "release-it --only-version",
-    "web": "vite",
-    "build:web": "vite build"
+    "release": "release-it --only-version"
   },
   "keywords": [
     "react-native",
     "ios",
-    "android"
+    "android",
+    "hinge",
+    "fold",
+    "duo"
   ],
   "repository": {
     "type": "git",
@@ -96,7 +97,7 @@
   "peerDependencies": {
     "react": "*",
     "react-native": "*",
-    "react-native-nitro-modules": "^0.37.1"
+    "react-native-nitro-modules": "*"
   },
   "workspaces": [
     "example"

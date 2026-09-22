@@ -19,6 +19,18 @@ Pod::Spec.new do |s|
     "cpp/**/*.{hpp,cpp}",
   ]
 
+  # Required for Nitro's C++ ↔ Swift interop.
+  # - DEFINES_MODULE: Xcode generates NitroHinge-Swift.h so C++ can see Swift classes
+  # - SWIFT_OBJC_INTEROP_MODE = objcxx: enables the modern C++/Swift bridge
+  # - CLANG_CXX_LANGUAGE_STANDARD = c++20: Nitro requires C++20
+  # Without these, C++ code emits "Cannot find type 'HybridHinge' in scope".
+  s.pod_target_xcconfig = {
+    "DEFINES_MODULE" => "YES",
+    "SWIFT_OBJC_INTEROP_MODE" => "objcxx",
+    "CLANG_CXX_LANGUAGE_STANDARD" => "c++20",
+    "CLANG_CXX_LIBRARY" => "libc++"
+  }
+
   s.dependency 'React-jsi'
   s.dependency 'React-callinvoker'
 
