@@ -1,6 +1,6 @@
 {
   "name": "react-native-nitro-hinge",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Native size class, safe insets, and hinge geometry for React Native. Nitro-backed. iOS + Android. One API for phones, tablets, foldables, tri-folds, iPhone Duo — and whatever ships next.",
   "main": "./lib/module/index.js",
   "types": "./lib/typescript/src/index.d.ts",
