@@ -83,10 +83,6 @@ the same reactive hook that iOS uses. Asymmetric insets rotate
 correctly between book and tabletop postures. Size class flips
 from compact to expanded when the inner display becomes available.
 
-**No other React Native library ships this combination of iPhone Duo
-
-- Android foldables via Nitro today.**
-
 ## Status by platform
 
 | Platform            | Signals | Reactive updates | Fold detection | Notes                                                                                                                |
@@ -448,13 +444,7 @@ what styling engines do.
 - Samsung: [Foldable developer docs](https://developer.samsung.com/galaxy-z/foldable-experience)
 
 For device-specific metrics on every foldable in the market, see
-[`references/android-foldables-device-metrics.md`](./references/android-foldables-device-metrics.md).
-
-## Migrating an existing codebase
-
-See [MIGRATION.md](./MIGRATION.md) for grep patterns and step-by-step
-guidance on replacing `Dimensions.get`, ad-hoc font resizers, and
-`Platform.isPad` checks.
+[`android-foldables-device-metrics.md`](./android-foldables-device-metrics.md).
 
 ## Credits
 
@@ -465,6 +455,10 @@ refcounted source, `WindowInfoTrackerCallbackAdapter` over the coroutine flow,
 hinge-sensor client separation, version-counter change detection — is the
 reference the Nitro Android side is built on.
 
-## License
+## 🪪 License
 
-MIT — [Gautham](https://nitroai.dev) / nitroai.dev
+MIT © [**Gautham Vijayan**](https://gauthamvijay.com)
+
+---
+
+Made with ❤️ and [**Nitro Modules**](https://nitro.margelo.com)
