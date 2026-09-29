@@ -1,125 +1,80 @@
 package com.margelo.nitro.nitrohinge
 
+import android.content.res.Configuration
+import android.util.Log
 import com.margelo.nitro.NitroModules
-import com.margelo.nitro.core.Promise
-import java.util.UUID
+import com.margelo.nitro.core.HybridObject
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.atomic.AtomicLong
 
-/**
- * Kotlin implementation of the Hinge HybridObject.
- *
- * Reads native layout signals from Jetpack WindowManager:
- * - WindowMetricsCalculator for measured window bounds
- * - WindowInfoTracker for FoldingFeature (fold/hinge geometry)
- * - WindowSizeClass for compact/medium/expanded classification
- * - Configuration.fontScale for OS font scaling
- *
- * Thread model: WindowInfoTracker exposes a Flow on Kotlin's
- * Main dispatcher; we collect it in a coroutine scope tied to
- * the application context. Cached state is protected by a lock;
- * reads from JS threads are lock-serialized snapshots.
- *
- * Prefer WindowMetricsCalculator over Display.getRealSize() — the
- * latter doesn't reflect multi-window / split-screen state.
- * Prefer WindowInfoTracker over Configuration.orientation — the
- * latter doesn't tell you where the fold is.
- */
 class HybridHinge : HybridHingeSpec() {
 
   private val lock = Any()
-  private var cachedState: HingeState = HingeStateProbe.snapshot()
-  private val listeners = ConcurrentHashMap<UUID, (HingeState) -> Unit>()
+  @Volatile
+  private var cachedState: HingeState = HingeStateProbe.fallback()
+  private val listeners = ConcurrentHashMap<Long, (HingeState) -> Unit>()
+  private val nextId = AtomicLong(0)
+  private val cachedDeviceInfo: DeviceInfo = DeviceInfoProbe.read()
 
   init {
-    HingeObserver.shared.attach(this)
+    HingeObserver.attach(this)
   }
 
-  // NOTE: Nitro Kotlin HybridObjects don't have a deterministic
-  // destructor; the observer prunes weak references itself.
+  // === Nitro getters ===
 
-  // === Layout signals ===
+  override val widthClass: WidthSizeClass get() = cachedState.widthClass
+  override val heightClass: HeightSizeClass get() = cachedState.heightClass
+  override val windowWidth: Double get() = cachedState.windowWidth
+  override val windowHeight: Double get() = cachedState.windowHeight
+  override val safeInsets: SafeInsets get() = cachedState.safeInsets
+  override val fontScale: Double get() = cachedState.fontScale
+  override val foldFeatures: Array<FoldFeature> get() = cachedState.foldFeatures
+  override val hingeAngle: Double? get() = null // v0.3 — via WindowFoldSource hinge sensor
+  override val deviceInfo: DeviceInfo get() = cachedDeviceInfo
 
-  override val widthClass: WidthSizeClass
-    get() = synchronized(lock) { cachedState.widthClass }
+  override fun getState(): HingeState = cachedState
 
-  override val heightClass: HeightSizeClass
-    get() = synchronized(lock) { cachedState.heightClass }
-
-  override val windowWidth: Double
-    get() = synchronized(lock) { cachedState.windowWidth }
-
-  override val windowHeight: Double
-    get() = synchronized(lock) { cachedState.windowHeight }
-
-  override val safeInsets: SafeInsets
-    get() = synchronized(lock) { cachedState.safeInsets }
-
-  override val fontScale: Double
-    get() = synchronized(lock) { cachedState.fontScale }
-
-  // === Fold geometry ===
-  // Nitrogen maps TS `FoldFeature[]` to Kotlin `Array<FoldFeature>`,
-  // NOT `List<FoldFeature>`. Match the generated spec exactly.
-
-  override val foldFeatures: Array<FoldFeature>
-    get() = synchronized(lock) { cachedState.foldFeatures }
-
-  override val hingeAngle: Double?
-    // Android's TYPE_HINGE_ANGLE sensor (API 30+) reports the
-    // continuous angle. It fires at sensor rate and is intended
-    // for animation, not layout. Not cached here; consumers who
-    // need it should register a SensorManager listener themselves.
-    //
-    // Spec uses `number | undefined` which nitrogen maps to `Double?`.
-    // If you see `Variant_NullType_Double` in generated code, the spec
-    // still says `number | null` — fix the spec and regenerate.
-    get() = null
-
-  // === Device info ===
-
-  override val deviceInfo: DeviceInfo
-    get() = DeviceInfoProbe.read()
-
-  // === Snapshot ===
-
-  override fun getState(): HingeState {
-    synchronized(lock) { return cachedState }
-  }
-
-  // === Subscription ===
-
-  override fun addChangeListener(
-    callback: (HingeState) -> Unit
-  ): ChangeSubscription {
-    val id = UUID.randomUUID()
+  override fun addChangeListener(callback: (HingeState) -> Unit): ChangeSubscription {
+    val id = nextId.incrementAndGet()
     listeners[id] = callback
     return ChangeSubscription(remove = {
       listeners.remove(id)
     })
   }
 
-  // === Observer callback ===
+  // === Called by HingeObserver on WindowFoldSource change ===
 
-  /**
-   * Called by HingeObserver when WindowInfoTracker or
-   * ComponentCallbacks reports a layout change.
-   */
-  fun refreshState() {
-    val newState = HingeStateProbe.snapshot()
-    android.util.Log.d(
-      "Hinge",
-      "HybridHinge.refreshState: widthClass=${newState.widthClass} " +
-        "window=${newState.windowWidth}x${newState.windowHeight} " +
-        "folds=${newState.foldFeatures.size}"
-    )
-    synchronized(lock) {
-      cachedState = newState
+  fun onSourceChanged(source: WindowFoldSource.State) {
+    try {
+      val fontScale = readFontScale()
+      val next = HingeStateProbe.map(source, fontScale)
+      synchronized(lock) {
+        if (next == cachedState) return
+        cachedState = next
+      }
+      val snapshot = listeners.values.toList()
+      Log.d("Hinge", "HybridHinge.onSourceChanged: notifying ${snapshot.size} JS listeners")
+      for (cb in snapshot) {
+        try {
+          cb(next)
+        } catch (e: Throwable) {
+          Log.e("Hinge", "HybridHinge: JS callback threw", e)
+        }
+      }
+    } catch (e: Throwable) {
+      Log.e("Hinge", "HybridHinge.onSourceChanged: failed", e)
     }
-    // Snapshot listeners to avoid mutation-during-iteration.
-    val snapshot = listeners.values.toList()
-    android.util.Log.d("Hinge", "HybridHinge.refreshState: notifying ${snapshot.size} JS listeners")
-    for (cb in snapshot) {
-      cb(newState)
-    }
+  }
+
+  private fun readFontScale(): Double {
+    val ctx = NitroModules.applicationContext ?: return 1.0
+    val cfg: Configuration = ctx.resources.configuration
+    return cfg.fontScale.toDouble()
+  }
+
+  override fun dispose() {
+    HingeObserver.detach(this)
+    listeners.clear()
+    super.dispose()
   }
 }

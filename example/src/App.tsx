@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+
+import { ScrollView, StyleSheet, Text, View, SafeAreaView } from 'react-native';
+
 import {
   useHinge,
   font,
@@ -14,7 +16,8 @@ import {
   contentWidth,
   configureHinge,
 } from 'react-native-nitro-hinge';
-import { SafeAreaView } from 'react-native-safe-area-context';
+
+import type { FoldFeature } from 'react-native-nitro-hinge';
 
 // Configure once at app start. If your design mocks were drawn at
 // 375pt (older iPhone), set that here. Default is 390.
@@ -199,8 +202,6 @@ function Row({ label, value }: { label: string; value: string }) {
 // On typical foldables this shows once. On tri-folds it shows twice
 // when both hinges are half-open.
 // -----------------------------------------------------------------
-
-import type { FoldFeature } from 'react-native-nitro-hinge';
 
 function HingeInfo({
   fold,

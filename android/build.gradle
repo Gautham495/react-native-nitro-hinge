@@ -129,5 +129,6 @@ dependencies {
   // For WindowInsetsCompat inset reading.
   implementation "androidx.core:core-ktx:1.13.1"
 
-
+  implementation "androidx.window:window:1.5.1"
+  implementation "androidx.window:window-java:1.5.1"
 }

@@ -10,11 +10,10 @@ Native size class, safe insets, and hinge geometry for React Native.
 Nitro-backed. iOS + Android. One API for phones, tablets, foldables,
 tri-folds, iPhone Duo — and whatever ships next.
 
-> **Status: v1.0.0** — iOS is production-ready and verified
-> across all 6 iPhone Duo poses on the Xcode 27.1 beta simulator.
-> Android returns correct values at cold-start but state-change
-> propagation on WindowInfoTracker is still being tuned; expect
-> full parity in v2.0.0. See [Status by platform](#status-by-platform) below.
+> **Status: v2.0.0** — Both platforms verified end-to-end.
+> iOS across all 6 iPhone Duo poses on the Xcode 27.1 beta simulator.
+> Android across the full pose matrix (folded, book, tabletop, flat)
+> on the Pixel 10 Pro Fold API 37.2 emulator. See [Status by platform](#status-by-platform) below.
 
 ## Verified on iPhone Duo (Xcode 27.1 beta)
 
@@ -48,21 +47,58 @@ regions actually report, marshalled through Nitro's synchronous JSI
 bridge and rendered in a React Native example app with no manual
 polling, no bridge hops, no JS-side heuristics.
 
-**No other React Native library currently does this.**
+## Verified on Pixel 10 Pro Fold (Android emulator API 37.2)
+
+Six configurations across a regular phone and a foldable, all four
+fold states covered, correct readings on every one:
+
+<table>
+  <tr>
+    <td align="center"><strong>Regular phone</strong><br/>closed (compact)<br/>1 column<br/>no fold reported</td>
+    <td align="center"><strong>Fold cover screen</strong><br/>closed (compact)<br/>1 column<br/>closed / no fold</td>
+    <td align="center"><strong>Book pose (half-open, portrait)</strong><br/>Half Open<br/>3 columns<br/>vertical fold, separating</td>
+  </tr>
+  <tr>
+    <td><img src="./docs/img/android/1.png" alt="Pixel 10 regular phone" /></td>
+    <td><img src="./docs/img/android/2.png" alt="Pixel Fold cover screen" /></td>
+    <td><img src="./docs/img/android/3.png" alt="Pixel Fold book pose" /></td>
+  </tr>
+  <tr>
+    <td align="center"><strong>Tabletop (half-open, landscape)</strong><br/>Half Open<br/>3 columns<br/>horizontal fold</td>
+    <td align="center"><strong>Flat landscape</strong><br/>open (expanded)<br/>3 columns<br/>horizontal fold, flat</td>
+    <td align="center"><strong>Flat portrait</strong><br/>open (expanded)<br/>3 columns<br/>vertical fold, flat</td>
+  </tr>
+  <tr>
+    <td><img src="./docs/img/android/4.png" alt="Pixel Fold tabletop" /></td>
+    <td><img src="./docs/img/android/5.png" alt="Pixel Fold flat landscape" /></td>
+    <td><img src="./docs/img/android/6.png" alt="Pixel Fold flat portrait" /></td>
+  </tr>
+</table>
+
+Every value is what Jetpack WindowManager's `WindowInfoTracker` and
+`FoldingFeature` actually report, delivered through Nitro's JSI
+callbacks and rendered in the same React Native example app. Cold
+start, config changes, and fold-state transitions all propagate to
+the same reactive hook that iOS uses. Asymmetric insets rotate
+correctly between book and tabletop postures. Size class flips
+from compact to expanded when the inner display becomes available.
+
+**No other React Native library ships this combination of iPhone Duo
+
+- Android foldables via Nitro today.**
 
 ## Status by platform
 
-| Platform          | Signals         | Reactive updates | Fold detection | Notes                                                                                                                                      |
-| ----------------- | --------------- | ---------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
-| **iOS 13.4 – 26** | ✅              | ✅               | n/a            | Size class, safe insets, font scale, orientation.                                                                                          |
-| **iOS 27.1+**     | ✅              | ✅               | ✅             | Full `reservedRegions(kind: .division)` on Duo. Requires Xcode 27.1 beta and `HINGE_IOS_27_1_SDK=1` in podspec.                            |
-| **iPadOS**        | ✅              | ✅               | n/a            | Split View, Stage Manager, Slide Over all reflow correctly.                                                                                |
-| **Android**       | ✅ (cold-start) | ⚠️               | ⚠️             | Correct values on module load and on config changes. WindowInfoTracker flow subscription being tuned — expect production parity in v2.0.0. |
+| Platform            | Signals | Reactive updates | Fold detection | Notes                                                                                                                |
+| ------------------- | ------- | ---------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| **iOS 13.4 – 26**   | ✅      | ✅               | n/a            | Size class, safe insets, font scale, orientation.                                                                    |
+| **iOS 27.1+**       | ✅      | ✅               | ✅             | Full `reservedRegions(kind: .division)` on Duo. Requires Xcode 27.1 beta and `HINGE_IOS_27_1_SDK=1` in podspec.      |
+| **iPadOS**          | ✅      | ✅               | n/a            | Split View, Stage Manager, Slide Over all reflow correctly.                                                          |
+| **Android API 24+** | ✅      | ✅               | ✅             | Full `WindowInfoTracker` + `FoldingFeature` via `WindowFoldSource`. Verified on Pixel 10 Pro Fold API 37.2 emulator. |
 
-If you're shipping for iPhone Duo October 23, Hinge is ready today.
-If you need production-grade Android foldable support right now, wait
-for beta.2 or open an issue — the pipeline is 90% there, the last 10%
-is real-time fold-state fanout on emulator/device.
+If you're shipping for iPhone Duo October 23 or any Android
+foldable, Hinge is ready today. Emulator coverage is complete on
+both platforms. Physical device certification lands in v2.3.
 
 ## Why this exists now
 
@@ -121,6 +157,16 @@ in the market:
 | ------ | ----------------------------------- | ---------------------- | ------------------------------------------------------- |
 | Apple  | iPhone Duo                          | Book-style (2-panel)   | ✅ Full via iOS 27.1                                    |
 | Apple  | Future foldable iPad (rumored 2028) | Book-style or tri-fold | ✅ Same code path — `foldFeatures[]` scales to N hinges |
+
+<table>
+  <tr>
+    <td align="center"><strong>iOS Guide</strong></td>
+  </tr>
+  <tr>
+    <td><img src="./guide.png" alt="iOS Guide" /></td>
+  </tr>
+
+</table>
 
 ### Android — book-style (2-panel)
 
@@ -363,7 +409,9 @@ Vs. other RN foldable libraries:
 | `@logicwind/react-native-fold-detection` | Android only    | ❌          | ❌      | ❌       | ❌         | Alpha                      |
 | `@hecom/react-native-foldable`           | JS-only wrapper | ❌          | ❌      | ❌       | ❌         | Not native                 |
 | `marcooli/react-native-foldable`         | iOS + Android   | ❌ (Fabric) | Partial | ❌       | ❌         | 0.1.0-alpha, not published |
-| **`react-native-nitro-hinge`**           | iOS + Android   | ✅          | ✅      | ✅       | ✅         | v1.0.0                     |
+| `react-native-fold-kit`                  | iOS + Android   | ❌ (Fabric) | ✅      | ❌       | Partial    | 0.x, active                |
+| `react-native-hinges` (appandflow)       | iOS + Android   | ❌ (Fabric) | ✅      | ❌       | ❌         | 0.1.0-alpha                |
+| **`react-native-nitro-hinge`**           | iOS + Android   | ✅          | ✅      | ✅       | ✅         | **v2.0.0**                 |
 
 ## Position vs. styling engines
 
@@ -381,14 +429,14 @@ what styling engines do.
 
 ## Roadmap
 
-- **v1.0.0** (current) — iOS complete across all six Duo
-  poses, size classes on iPad and iPhone, WindowInfoTracker wired
-  on Android with correct cold-start values.
-- **v2.0.0** — Android fold-state fanout via
-  WindowInfoTracker flow, verified on Pixel 10 Pro Fold and
-  Samsung Z Fold emulators.
-- **v3.0.0** (target: iPhone Duo launch, Oct 23 2026) — stable
-  release aligned with iOS 27.1 GM.
+- **v2.0.0** (current) — iOS complete across all six Duo poses,
+  Android complete across all Pixel Fold poses via `WindowFoldSource`
+  - `WindowInfoTracker`.
+- **v2.1** — Continuous hinge-angle sensor via `TYPE_HINGE_ANGLE`
+  on Android and the iOS continuous angle API.
+- **v2.2** — Expo config plugin for zero-config integration.
+- **v2.3** — Physical device certification across Samsung Fold,
+  Pixel Fold, Honor Magic V, and iPhone Duo when the GM lands.
 
 ## Reference material
 
@@ -401,6 +449,21 @@ what styling engines do.
 
 For device-specific metrics on every foldable in the market, see
 [`references/android-foldables-device-metrics.md`](./references/android-foldables-device-metrics.md).
+
+## Migrating an existing codebase
+
+See [MIGRATION.md](./MIGRATION.md) for grep patterns and step-by-step
+guidance on replacing `Dimensions.get`, ad-hoc font resizers, and
+`Platform.isPad` checks.
+
+## Credits
+
+Android observation architecture adapted from
+[react-native-fold-kit](https://github.com/AlexeyTsutsoev/react-native-fold-kit)
+by Alexey Tsutsoev (MIT). Their `WindowFoldSource` design — per-activity
+refcounted source, `WindowInfoTrackerCallbackAdapter` over the coroutine flow,
+hinge-sensor client separation, version-counter change detection — is the
+reference the Nitro Android side is built on.
 
 ## License
 
