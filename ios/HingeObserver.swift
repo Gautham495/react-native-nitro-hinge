@@ -35,8 +35,15 @@ final class HingeObserver: NSObject {
   private static var kvoContext = 0
   private var refreshScheduled = false
   private var regionProbes: [ObjectIdentifier: UIView] = [:]
+  private var hingeInteractions: [ObjectIdentifier: NSObject] = [:]
+  private var latestHingeAngle: Double?
 
   private override init() { super.init() }
+
+  var hingeAngle: Double? {
+    lock.lock(); defer { lock.unlock() }
+    return latestHingeAngle
+  }
 
   // MARK: - Attach / detach
 
@@ -183,6 +190,16 @@ final class HingeObserver: NSObject {
     probe.onChange = { [weak self] in self?.scheduleRefresh() }
     window.insertSubview(probe, at: 0)
     regionProbes[id] = probe
+
+    let interaction = UIHingeInteraction { [weak self] _, update in
+      guard let self = self else { return }
+      let degrees = update.hinge.map { Double($0.angle) * 180 / .pi }
+      self.lock.lock()
+      self.latestHingeAngle = degrees
+      self.lock.unlock()
+    }
+    window.addInteraction(interaction)
+    hingeInteractions[id] = interaction
   }
   #endif
 
