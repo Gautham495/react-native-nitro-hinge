@@ -150,7 +150,7 @@ enum HingeStateProbe {
     // The real API: view.reservedRegions(kind: .division).
     // Returns an array of UIReservedRegion (or similar — final name
     // pending Xcode 27.1 beta), each with a frame in view coordinates.
-    let regions = window.reservedRegions(kind: .division)
+    let regions = window.reservedRegions(kind: .division, options: [.includeInactive])
 
     return regions.map { region in
       let rect = region.frame
@@ -168,12 +168,11 @@ enum HingeStateProbe {
           height: Double(rect.height)
         ),
         orientation: orientation,
-        // If an active division region is present, we're halfOpened.
-        state: .halfopened,
-        // iOS treats hinges as physical seams — full occlusion.
-        occlusionType: .full,
-        // An active division always separates content.
-        isSeparating: true
+        // An inactive region is the fold of a device lying flat. It keeps
+        // its frame but doesn't split the content.
+        state: region.isActive ? .halfopened : .flat,
+        occlusionType: region.isActive ? OcclusionType.full : OcclusionType.none,
+        isSeparating: region.isActive
       )
     }
   }
