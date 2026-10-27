@@ -169,7 +169,7 @@ enum HingeStateProbe {
         ),
         orientation: orientation,
         // If an active division region is present, we're halfOpened.
-        state: .halfOpened,
+        state: .halfopened,
         // iOS treats hinges as physical seams — full occlusion.
         occlusionType: .full,
         // An active division always separates content.
