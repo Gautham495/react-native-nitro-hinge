@@ -110,12 +110,10 @@ final class HybridHinge: HybridHingeSpec {
   }
 
   var hingeAngle: Double? {
-    // UIHingeInteraction (iOS 27.1+) reports angle for animation.
-    // We don't cache it here because the value changes at sensor
-    // rate; consumers who need it should attach a UIHingeInteraction
-    // themselves and pipe values via their own state.
-    // For most apps null is the right answer.
-    return nil
+    // Last angle the UIHingeInteraction on the window reported, in degrees.
+    // Nil when the device has no hinge or the app was built without
+    // HINGE_IOS_27_1_SDK.
+    return HingeObserver.shared.hingeAngle
   }
 
   // MARK: - Device info
