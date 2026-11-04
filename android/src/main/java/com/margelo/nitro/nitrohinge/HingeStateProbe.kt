@@ -17,7 +17,7 @@ object HingeStateProbe {
   private const val HEIGHT_MEDIUM_DP = 480.0
   private const val HEIGHT_EXPANDED_DP = 900.0
 
-  fun map(source: WindowFoldSource.State, fontScale: Double): HingeState {
+  fun map(source: WindowFoldSource.State): HingeState {
     val d = if (source.metrics.density > 0f) source.metrics.density.toDouble() else 1.0
     val widthDp = source.metrics.widthPx / d
     val heightDp = source.metrics.heightPx / d
@@ -49,7 +49,7 @@ object HingeStateProbe {
       windowHeight = heightDp,
       safeInsets = safeInsets,
       foldFeatures = foldFeatures,
-      fontScale = fontScale,
+      fontScale = source.fontScale.toDouble(),
     )
   }
 

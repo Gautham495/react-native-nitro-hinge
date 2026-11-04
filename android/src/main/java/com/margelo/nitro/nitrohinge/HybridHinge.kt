@@ -1,8 +1,6 @@
 package com.margelo.nitro.nitrohinge
 
-import android.content.res.Configuration
 import android.util.Log
-import com.margelo.nitro.NitroModules
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
@@ -44,7 +42,7 @@ class HybridHinge : HybridHingeSpec() {
   // === Called by HingeObserver on WindowFoldSource change ===
 
   fun onSourceChanged(source: WindowFoldSource.State) {
-    val next = HingeStateProbe.map(source, readFontScale())
+    val next = HingeStateProbe.map(source)
     if (next == cachedState) return
     cachedState = next
     for (cb in listeners.values.toList()) {
@@ -54,12 +52,6 @@ class HybridHinge : HybridHingeSpec() {
         Log.e("Hinge", "HybridHinge: JS callback threw", e)
       }
     }
-  }
-
-  private fun readFontScale(): Double {
-    val ctx = NitroModules.applicationContext ?: return 1.0
-    val cfg: Configuration = ctx.resources.configuration
-    return cfg.fontScale.toDouble()
   }
 
   override fun dispose() {

@@ -23,8 +23,8 @@ import java.util.concurrent.Executor
 
 /**
  * Shared per-activity window state source: FoldingFeature list from Jetpack
- * WindowManager, display cutouts, window metrics, and (when a client asks
- * for it) the hinge angle sensor.
+ * WindowManager, display cutouts, window metrics, font scale, and (when a
+ * client asks for it) the hinge angle sensor.
  *
  * Refcounted — the first acquire() starts observation, the last release()
  * stops it and evicts the source from the process map.
@@ -55,6 +55,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
     val folds: List<FoldFeatureInput>,
     val cutouts: List<PxRect>,
     val metrics: Metrics,
+    val fontScale: Float,
     val hingeAngle: Double?,
   )
 
@@ -62,7 +63,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
     fun onFoldSourceChanged(state: State)
   }
 
-  var state: State = State(emptyList(), emptyList(), Metrics(0, 0, 1f), lastHingeAngle)
+  var state: State = State(emptyList(), emptyList(), Metrics(0, 0, 1f), 1f, lastHingeAngle)
     private set
 
   /** Incremented on every state change; downstream can skip recompute cheaply. */
@@ -157,7 +158,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
   }
 
   private fun refresh() {
-    val next = State(folds, readCutouts(), readMetrics(), hingeAngle)
+    val next = State(folds, readCutouts(), readMetrics(), readFontScale(), hingeAngle)
     if (next == state) return
     state = next
     version += 1
@@ -175,6 +176,8 @@ class WindowFoldSource private constructor(val activity: Activity) {
     val cutout = decorView.rootWindowInsets?.displayCutout ?: return emptyList()
     return cutout.boundingRects.map { PxRect(it.left, it.top, it.right, it.bottom) }
   }
+
+  private fun readFontScale(): Float = activity.resources.configuration.fontScale
 
   private fun hingeSensor(): Sensor? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
