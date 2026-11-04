@@ -7,9 +7,10 @@ appId: ${APP_ID}
     element:
       id: "fold-0-state"
       text: "halfOpened"
-- assertVisible:
-    id: "fold-0-separating"
-    text: "true"
+- scrollUntilVisible:
+    element:
+      id: "fold-0-separating"
+      text: "true"
 - scrollUntilVisible:
     element:
       id: "fold-0-occlusion"
