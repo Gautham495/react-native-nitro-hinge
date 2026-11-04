@@ -65,7 +65,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
     fun onFoldSourceChanged(state: State)
   }
 
-  var state: State = State(emptyList(), PxInsets.ZERO, Metrics(0, 0, 1f), 1f, lastHingeAngle)
+  var state: State = State(lastFolds, lastInsets, Metrics(0, 0, 1f), 1f, lastHingeAngle)
     private set
 
   /** Incremented on every state change; downstream can skip recompute cheaply. */
@@ -74,7 +74,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
 
   private val listeners = LinkedHashSet<Listener>()
   private val hingeClients = HashSet<Listener>()
-  private var folds: List<FoldFeatureInput> = emptyList()
+  private var folds: List<FoldFeatureInput> = lastFolds
   private var hingeAngle: Double? = lastHingeAngle
   private var hingeRegistered = false
 
@@ -97,6 +97,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
         orientation = feature.orientation,
       )
     }
+    lastFolds = folds
     refresh()
   }
 
@@ -175,10 +176,11 @@ class WindowFoldSource private constructor(val activity: Activity) {
   }
 
   private fun readInsets(): PxInsets {
-    val raw = decorView.rootWindowInsets ?: return PxInsets.ZERO
+    // A recreated Activity has no insets until its first layout.
+    val raw = decorView.rootWindowInsets ?: return lastInsets
     val insets = WindowInsetsCompat.toWindowInsetsCompat(raw, decorView)
       .getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
-    return PxInsets(insets.left, insets.top, insets.right, insets.bottom)
+    return PxInsets(insets.left, insets.top, insets.right, insets.bottom).also { lastInsets = it }
   }
 
   private fun readFontScale(): Float = activity.resources.configuration.fontScale
@@ -193,6 +195,13 @@ class WindowFoldSource private constructor(val activity: Activity) {
 
     /** Process-wide last hinge reading; seeds new sources so paused/resumed apps don't flicker. */
     private var lastHingeAngle: Double? = null
+
+    /**
+     * Process-wide last folds and insets. A recreated Activity reports them
+     * a frame or two late, and JS would see none in between.
+     */
+    private var lastFolds: List<FoldFeatureInput> = emptyList()
+    private var lastInsets: PxInsets = PxInsets.ZERO
 
     fun acquire(activity: Activity, listener: Listener, wantsHingeAngle: Boolean): WindowFoldSource {
       val source = sources.getOrPut(activity) { WindowFoldSource(activity) }
