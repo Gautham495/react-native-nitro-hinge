@@ -13,7 +13,9 @@ flow() {
 
 trap 'xcrun simctl ui booted content_size large >/dev/null 2>&1 || true' EXIT
 
-flow launch.yaml
+# The home indicator leaves a bottom inset. Top can be 0: the closed
+# iPhone Duo puts its status bar on the right.
+flow -e INSETS='t\d+ r\d+ b[1-9]\d* l\d+' launch.yaml
 flow rotate.yaml
 
 # Dynamic Type sizes map to fontScale in ios/UIContentSizeCategory+fontScaleMultiplier.swift.

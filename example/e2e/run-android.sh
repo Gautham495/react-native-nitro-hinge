@@ -23,7 +23,15 @@ reset_device() {
 }
 trap reset_device EXIT
 
-flow launch.yaml
+# Android 15+ forces edge-to-edge at this targetSdk, so the content sits
+# under the bars and gets a bottom inset. Older versions lay it out inside
+# the bars, where every inset is 0.
+if [ "$(adb shell getprop ro.build.version.sdk | tr -d '\r')" -ge 35 ]; then
+  INSETS='t\d+ r\d+ b[1-9]\d* l\d+'
+else
+  INSETS='t0 r0 b0 l0'
+fi
+flow -e INSETS="$INSETS" launch.yaml
 flow rotate.yaml
 
 # Android recreates the Activity on a font scale change while JS keeps

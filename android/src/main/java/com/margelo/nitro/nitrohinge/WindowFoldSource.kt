@@ -24,8 +24,9 @@ import java.util.concurrent.Executor
 
 /**
  * Shared per-activity window state source: FoldingFeature list from Jetpack
- * WindowManager, system bar and cutout insets, window metrics, font scale,
- * and (when a client asks for it) the hinge angle sensor.
+ * WindowManager, the system bar and cutout insets over the app content,
+ * window metrics, font scale, and (when a client asks for it) the hinge
+ * angle sensor.
  *
  * Refcounted — the first acquire() starts observation, the last release()
  * stops it and evicts the source from the process map.
@@ -178,9 +179,15 @@ class WindowFoldSource private constructor(val activity: Activity) {
   private fun readInsets(): PxInsets {
     // A recreated Activity has no insets until its first layout.
     val raw = decorView.rootWindowInsets ?: return lastInsets
-    val insets = WindowInsetsCompat.toWindowInsetsCompat(raw, decorView)
+    val content = activity.findViewById<View>(android.R.id.content)
+    if (content == null || !content.isLaidOut) return lastInsets
+    val bars = WindowInsetsCompat.toWindowInsetsCompat(raw, decorView)
       .getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
-    return PxInsets(insets.left, insets.top, insets.right, insets.bottom).also { lastInsets = it }
+    val origin = IntArray(2).also { content.getLocationInWindow(it) }
+    val bounds = PxRect(origin[0], origin[1], origin[0] + content.width, origin[1] + content.height)
+    return PxInsets(bars.left, bars.top, bars.right, bars.bottom)
+      .overlapping(bounds, decorView.width, decorView.height)
+      .also { lastInsets = it }
   }
 
   private fun readFontScale(): Float = activity.resources.configuration.fontScale
@@ -211,8 +218,19 @@ class WindowFoldSource private constructor(val activity: Activity) {
   }
 }
 
-/** Integer pixel insets from each window edge. */
 data class PxInsets(val left: Int, val top: Int, val right: Int, val bottom: Int) {
+  /**
+   * The part of these window insets that still covers [content], a rect in
+   * window coordinates. Without edge-to-edge the content already sits
+   * inside the system bars, so this is zero there.
+   */
+  fun overlapping(content: PxRect, windowWidth: Int, windowHeight: Int) = PxInsets(
+    left = maxOf(0, left - content.left),
+    top = maxOf(0, top - content.top),
+    right = maxOf(0, right - (windowWidth - content.right)),
+    bottom = maxOf(0, bottom - (windowHeight - content.bottom)),
+  )
+
   companion object {
     val ZERO = PxInsets(0, 0, 0, 0)
   }

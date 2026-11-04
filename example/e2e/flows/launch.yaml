@@ -6,9 +6,8 @@ appId: ${APP_ID}
 - assertVisible:
     id: "width-class"
     text: "compact|medium|expanded"
-# Portrait always has a bottom inset (navigation bar on Android, home
-# indicator on iOS). Top can be 0: the closed iPhone Duo puts its status
-# bar on the right.
+# The runner passes the expected pattern. Edge-to-edge content has a
+# bottom inset; content laid out inside the bars has none.
 - assertVisible:
     id: "safe-insets"
-    text: 't\d+ r\d+ b[1-9]\d* l\d+'
+    text: ${INSETS}
