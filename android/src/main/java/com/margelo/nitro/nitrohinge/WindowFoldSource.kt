@@ -49,6 +49,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
     val bounds: PxRect,
     val isHalfOpened: Boolean,
     val isSeparating: Boolean,
+    val isOccluding: Boolean,
     val orientation: FoldingFeature.Orientation,
   )
 
@@ -92,6 +93,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
         bounds = PxRect(b.left, b.top, b.right, b.bottom),
         isHalfOpened = feature.state == FoldingFeature.State.HALF_OPENED,
         isSeparating = feature.isSeparating,
+        isOccluding = feature.occlusionType == FoldingFeature.OcclusionType.FULL,
         orientation = feature.orientation,
       )
     }

@@ -35,7 +35,7 @@ object HingeStateProbe {
           else -> FoldOrientation.VERTICAL
         },
         state = if (input.isHalfOpened) FoldState.HALFOPENED else FoldState.FLAT,
-        occlusionType = OcclusionType.NONE,
+        occlusionType = if (input.isOccluding) OcclusionType.FULL else OcclusionType.NONE,
         isSeparating = input.isSeparating,
       )
     }.toTypedArray()
