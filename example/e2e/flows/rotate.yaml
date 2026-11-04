@@ -1,0 +1,12 @@
+appId: ${APP_ID}
+---
+- launchApp
+- setOrientation: PORTRAIT
+- copyTextFrom:
+    id: "window"
+- evalScript: ${output.landscape = maestro.copiedText.split(' × ').reverse().join(' × ')}
+- setOrientation: LANDSCAPE_LEFT
+- assertVisible:
+    id: "window"
+    text: ${output.landscape}
+- setOrientation: PORTRAIT

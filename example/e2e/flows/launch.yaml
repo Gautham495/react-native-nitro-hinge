@@ -1,0 +1,14 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Hinge Demo"
+- assertVisible:
+    id: "width-class"
+    text: "compact|medium|expanded"
+# Portrait always has a bottom inset (navigation bar on Android, home
+# indicator on iOS). Top can be 0: the closed iPhone Duo puts its status
+# bar on the right.
+- assertVisible:
+    id: "safe-insets"
+    text: 't\d+ r\d+ b[1-9]\d* l\d+'

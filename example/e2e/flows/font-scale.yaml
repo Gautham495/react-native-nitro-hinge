@@ -1,0 +1,5 @@
+appId: ${APP_ID}
+---
+- assertVisible:
+    id: "font-scale"
+    text: ${FONT_SCALE}
