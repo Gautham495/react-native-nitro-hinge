@@ -40,7 +40,7 @@ import java.util.concurrent.Executor
  *
  * Main thread only. All callbacks fire on main.
  */
-class WindowFoldSource private constructor(private val activity: Activity) {
+class WindowFoldSource private constructor(val activity: Activity) {
 
   data class Metrics(val widthPx: Int, val heightPx: Int, val density: Float)
 
@@ -59,7 +59,7 @@ class WindowFoldSource private constructor(private val activity: Activity) {
   )
 
   fun interface Listener {
-    fun onFoldSourceChanged()
+    fun onFoldSourceChanged(state: State)
   }
 
   var state: State = State(emptyList(), emptyList(), Metrics(0, 0, 1f), lastHingeAngle)
@@ -162,7 +162,7 @@ class WindowFoldSource private constructor(private val activity: Activity) {
     state = next
     version += 1
     // Copy: a listener may release itself while being notified.
-    listeners.toList().forEach { it.onFoldSourceChanged() }
+    listeners.toList().forEach { it.onFoldSourceChanged(next) }
   }
 
   private fun readMetrics(): Metrics {

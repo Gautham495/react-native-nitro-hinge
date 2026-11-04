@@ -1,94 +1,108 @@
 package com.margelo.nitro.nitrohinge
 
 import android.app.Activity
-import android.util.Log
+import android.os.Handler
+import android.os.Looper
+import com.facebook.react.bridge.LifecycleEventListener
+import com.facebook.react.bridge.ReactApplicationContext
 import com.margelo.nitro.NitroModules
 import java.lang.ref.WeakReference
 import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.CountDownLatch
+import java.util.concurrent.TimeUnit
 
 /**
- * Global observer that owns a WindowFoldSource subscription and pings every
- * live HybridHinge instance when the source changes.
+ * Process-wide observer. Owns one WindowFoldSource subscription and pushes
+ * each change to every live HybridHinge.
  *
- * WindowFoldSource does the heavy lifting (WindowInfoTracker subscription,
- * lifecycle, refcounting, cutouts, sensor). This object only:
- * - Bootstraps the Activity from ReactApplicationContext at first attach
- * - Subscribes to the source on behalf of all HybridHinge instances
- * - Fans out onFoldSourceChanged() calls to attached HybridHinges
+ * WindowFoldSource handles the WindowInfoTracker subscription, refcounting,
+ * insets and the sensor. This object binds that source to React Native's
+ * current Activity, rebinds it when the host resumes with a different one
+ * (recreation, cold start), and fans state out to attached HybridHinges.
  *
- * Main thread only.
+ * Everything except attach/detach runs on the main thread.
  */
-object HingeObserver : WindowFoldSource.Listener {
+object HingeObserver : WindowFoldSource.Listener, LifecycleEventListener {
 
-  private const val TAG = "Hinge"
+  private const val INITIAL_STATE_TIMEOUT_MS = 250L
 
+  private val mainHandler = Handler(Looper.getMainLooper())
   private val instances = ConcurrentLinkedQueue<WeakReference<HybridHinge>>()
-  private var source: WindowFoldSource? = null
-  private var sourceActivity: Activity? = null
 
+  private var source: WindowFoldSource? = null
+  private var reactContext: ReactApplicationContext? = null
+
+  /** Called from the JS thread when Nitro constructs a HybridHinge. */
   fun attach(hinge: HybridHinge) {
-    Log.d(TAG, "Observer.attach")
     instances.add(WeakReference(hinge))
-    ensureSource()
+    runOnMainBlocking { onAttached(hinge) }
   }
 
   fun detach(hinge: HybridHinge) {
+    instances.removeAll { ref -> ref.get().let { it == null || it === hinge } }
+    mainHandler.post { if (instances.isEmpty()) stop() }
+  }
+
+  override fun onFoldSourceChanged(state: WindowFoldSource.State) {
     val it = instances.iterator()
     while (it.hasNext()) {
-      val ref = it.next()
-      val h = ref.get()
-      if (h == null || h === hinge) it.remove()
-    }
-    if (instances.isEmpty()) {
-      releaseSource()
+      val hinge = it.next().get()
+      if (hinge == null) it.remove() else hinge.onSourceChanged(state)
     }
   }
 
-  override fun onFoldSourceChanged() {
-    val src = source ?: return
-    val snapshot = src.state
-    val it = instances.iterator()
-    var live = 0
-    while (it.hasNext()) {
-      val ref = it.next()
-      val h = ref.get()
-      if (h == null) {
-        it.remove()
-      } else {
-        live += 1
-        h.onSourceChanged(snapshot)
-      }
-    }
-    Log.d(TAG, "Observer.onFoldSourceChanged: notified $live instances")
+  // RN sets currentActivity right before it calls onHostResume, so this is
+  // where a recreated Activity shows up.
+  override fun onHostResume() {
+    bind(reactContext?.currentActivity)
   }
 
-  private fun ensureSource() {
-    if (source != null) return
-    val activity = bootstrapActivity() ?: run {
-      Log.w(TAG, "Observer.ensureSource: no activity yet")
-      return
-    }
-    sourceActivity = activity
-    source = WindowFoldSource.acquire(activity, this, wantsHingeAngle = false)
-    Log.d(TAG, "Observer.ensureSource: acquired for activity=$activity")
-    // Push initial state immediately.
-    onFoldSourceChanged()
-  }
+  override fun onHostPause() = Unit
 
-  private fun releaseSource() {
+  override fun onHostDestroy() {
     source?.release(this)
     source = null
-    sourceActivity = null
   }
 
-  private fun bootstrapActivity(): Activity? {
-    val ctx = NitroModules.applicationContext ?: return null
-    return try {
-      val method = ctx.javaClass.getMethod("getCurrentActivity")
-      method.invoke(ctx) as? Activity
-    } catch (e: Throwable) {
-      Log.w(TAG, "Observer.bootstrapActivity: ${e.message}")
-      null
+  private fun onAttached(hinge: HybridHinge) {
+    val ctx = reactContext ?: NitroModules.applicationContext?.also {
+      reactContext = it
+      it.addLifecycleEventListener(this)
+    } ?: return
+    bind(ctx.currentActivity)
+    source?.let { hinge.onSourceChanged(it.state) }
+  }
+
+  private fun bind(activity: Activity?) {
+    if (activity == null || activity === source?.activity) return
+    source?.release(this)
+    source = null
+    source = WindowFoldSource.acquire(activity, this, wantsHingeAngle = false)
+    source?.let { onFoldSourceChanged(it.state) }
+  }
+
+  private fun stop() {
+    source?.release(this)
+    source = null
+    reactContext?.removeLifecycleEventListener(this)
+    reactContext = null
+  }
+
+  // Blocks so reads at module load already see the real window. The timeout
+  // keeps JS from hanging if main is busy or waiting on JS.
+  private fun runOnMainBlocking(block: () -> Unit) {
+    if (Looper.myLooper() == Looper.getMainLooper()) {
+      block()
+      return
     }
+    val done = CountDownLatch(1)
+    mainHandler.post {
+      try {
+        block()
+      } finally {
+        done.countDown()
+      }
+    }
+    done.await(INITIAL_STATE_TIMEOUT_MS, TimeUnit.MILLISECONDS)
   }
 }
