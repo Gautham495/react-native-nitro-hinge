@@ -13,6 +13,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.core.util.Consumer
+import androidx.core.view.WindowInsetsCompat
 import androidx.window.java.layout.WindowInfoTrackerCallbackAdapter
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
@@ -23,8 +24,8 @@ import java.util.concurrent.Executor
 
 /**
  * Shared per-activity window state source: FoldingFeature list from Jetpack
- * WindowManager, display cutouts, window metrics, font scale, and (when a
- * client asks for it) the hinge angle sensor.
+ * WindowManager, system bar and cutout insets, window metrics, font scale,
+ * and (when a client asks for it) the hinge angle sensor.
  *
  * Refcounted — the first acquire() starts observation, the last release()
  * stops it and evicts the source from the process map.
@@ -53,7 +54,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
 
   data class State(
     val folds: List<FoldFeatureInput>,
-    val cutouts: List<PxRect>,
+    val insets: PxInsets,
     val metrics: Metrics,
     val fontScale: Float,
     val hingeAngle: Double?,
@@ -63,7 +64,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
     fun onFoldSourceChanged(state: State)
   }
 
-  var state: State = State(emptyList(), emptyList(), Metrics(0, 0, 1f), 1f, lastHingeAngle)
+  var state: State = State(emptyList(), PxInsets.ZERO, Metrics(0, 0, 1f), 1f, lastHingeAngle)
     private set
 
   /** Incremented on every state change; downstream can skip recompute cheaply. */
@@ -158,7 +159,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
   }
 
   private fun refresh() {
-    val next = State(folds, readCutouts(), readMetrics(), readFontScale(), hingeAngle)
+    val next = State(folds, readInsets(), readMetrics(), readFontScale(), hingeAngle)
     if (next == state) return
     state = next
     version += 1
@@ -171,10 +172,11 @@ class WindowFoldSource private constructor(val activity: Activity) {
     return Metrics(m.bounds.width(), m.bounds.height(), m.density)
   }
 
-  private fun readCutouts(): List<PxRect> {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return emptyList()
-    val cutout = decorView.rootWindowInsets?.displayCutout ?: return emptyList()
-    return cutout.boundingRects.map { PxRect(it.left, it.top, it.right, it.bottom) }
+  private fun readInsets(): PxInsets {
+    val raw = decorView.rootWindowInsets ?: return PxInsets.ZERO
+    val insets = WindowInsetsCompat.toWindowInsetsCompat(raw, decorView)
+      .getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+    return PxInsets(insets.left, insets.top, insets.right, insets.bottom)
   }
 
   private fun readFontScale(): Float = activity.resources.configuration.fontScale
@@ -195,6 +197,13 @@ class WindowFoldSource private constructor(val activity: Activity) {
       source.add(listener, wantsHingeAngle)
       return source
     }
+  }
+}
+
+/** Integer pixel insets from each window edge. */
+data class PxInsets(val left: Int, val top: Int, val right: Int, val bottom: Int) {
+  companion object {
+    val ZERO = PxInsets(0, 0, 0, 0)
   }
 }
 
