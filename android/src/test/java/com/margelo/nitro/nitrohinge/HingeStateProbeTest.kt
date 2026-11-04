@@ -124,7 +124,7 @@ class HingeStateProbeTest {
 
   @Test
   fun `maps equal inputs to equal states`() {
-    val input = state(folds = listOf(fold(isHalfOpened = true)), insets = PxInsets(0, 24, 0, 48))
+    val input = state(folds = listOf(fold(isHalfOpened = true)), insets = PxInsets(left = 0, top = 24, right = 0, bottom = 48))
 
     assertEquals(HingeStateProbe.map(input), HingeStateProbe.map(input))
   }
