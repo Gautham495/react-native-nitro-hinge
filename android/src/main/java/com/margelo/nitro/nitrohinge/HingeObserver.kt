@@ -59,10 +59,7 @@ object HingeObserver : WindowFoldSource.Listener, LifecycleEventListener {
 
   override fun onHostPause() = Unit
 
-  override fun onHostDestroy() {
-    source?.release(this)
-    source = null
-  }
+  override fun onHostDestroy() = releaseSource()
 
   private fun onAttached(hinge: HybridHinge) {
     val ctx = NitroModules.applicationContext ?: return
@@ -79,17 +76,21 @@ object HingeObserver : WindowFoldSource.Listener, LifecycleEventListener {
 
   private fun bind(activity: Activity?) {
     if (activity == null || activity === source?.activity) return
-    source?.release(this)
-    source = null
-    source = WindowFoldSource.acquire(activity, this, wantsHingeAngle = false)
-    source?.let { onFoldSourceChanged(it.state) }
+    releaseSource()
+    val next = WindowFoldSource.acquire(activity, this, wantsHingeAngle = false)
+    source = next
+    onFoldSourceChanged(next.state)
   }
 
   private fun stop() {
-    source?.release(this)
-    source = null
+    releaseSource()
     reactContext?.removeLifecycleEventListener(this)
     reactContext = null
+  }
+
+  private fun releaseSource() {
+    source?.release(this)
+    source = null
   }
 
   // Blocks so reads at module load already see the real window. The timeout
