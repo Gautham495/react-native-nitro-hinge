@@ -65,10 +65,14 @@ object HingeObserver : WindowFoldSource.Listener, LifecycleEventListener {
   }
 
   private fun onAttached(hinge: HybridHinge) {
-    val ctx = reactContext ?: NitroModules.applicationContext?.also {
-      reactContext = it
-      it.addLifecycleEventListener(this)
-    } ?: return
+    val ctx = NitroModules.applicationContext ?: return
+    // A JS reload creates a new ReactApplicationContext but never destroys
+    // the old one, and the old one stops getting lifecycle events.
+    if (ctx !== reactContext) {
+      reactContext?.removeLifecycleEventListener(this)
+      reactContext = ctx
+      ctx.addLifecycleEventListener(this)
+    }
     bind(ctx.currentActivity)
     source?.let { hinge.onSourceChanged(it.state) }
   }
