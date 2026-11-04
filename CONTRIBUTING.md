@@ -141,6 +141,9 @@ The `package.json` file contains various scripts for common tasks:
 - `yarn example ios`: run the example app on iOS.
   - `yarn example web`: run the example app on Web.
 - `yarn example build:web`: build the example app for Web.
+- `yarn test:android`: run the Android unit tests (JUnit) through the example app's Gradle project.
+- `yarn example e2e:android`: run the Maestro e2e flows on the connected Android device or emulator. The fold steps need a foldable emulator.
+- `yarn example e2e:ios`: run the Maestro e2e flows on the booted iOS simulator. Use a regular iPhone, since rotation fails on the iPhone Duo simulator.
   
 ### Sending a pull request
 
