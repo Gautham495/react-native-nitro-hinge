@@ -88,7 +88,7 @@ from compact to expanded when the inner display becomes available.
 | Platform            | Signals | Reactive updates | Fold detection | Notes                                                                                                                |
 | ------------------- | ------- | ---------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **iOS 13.4 – 26**   | ✅      | ✅               | n/a            | Size class, safe insets, font scale, orientation.                                                                    |
-| **iOS 27.1+**       | ✅      | ✅               | ✅             | Full `reservedRegions(kind: .division)` on Duo. Requires Xcode 27.1 beta and `HINGE_IOS_27_1_SDK=1` in podspec.      |
+| **iOS 27.1+**       | ✅      | ✅               | ✅             | Full `reservedRegions(kind: .division)` on Duo. Needs Xcode 27.1+; `pod install` turns it on.                        |
 | **iPadOS**          | ✅      | ✅               | n/a            | Split View, Stage Manager, Slide Over all reflow correctly.                                                          |
 | **Android API 24+** | ✅      | ✅               | ✅             | Full `WindowInfoTracker` + `FoldingFeature` via `WindowFoldSource`. Verified on Pixel 10 Pro Fold API 37.2 emulator. |
 

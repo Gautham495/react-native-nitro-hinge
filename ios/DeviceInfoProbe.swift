@@ -31,17 +31,12 @@ enum DeviceInfoProbe {
   /// just with zero width. On a non-folding iPhone or iPad, the
   /// call returns an empty array.
   ///
-  /// COMPILE-TIME GATE: the `reservedRegions(kind:options:)` API
-  /// ships in iOS 27.1 SDK. Xcode 27.0 doesn't have it, so this
-  /// entire path is compiled out until HINGE_IOS_27_1_SDK is
-  /// defined (see HingeStateProbe for the same gate).
-  ///
-  /// Until then this always returns false — safe fallback that
-  /// matches every non-foldable device today. Layout code should
-  /// never depend on this anyway; it's analytics-only.
+  /// Returns false when built without the iOS 27.1 SDK, where
+  /// `reservedRegions(kind:options:)` doesn't exist. The podspec
+  /// sets HINGE_IOS_27_1_SDK when that SDK is present.
   @MainActor
   static func hasHardwareHinge() -> Bool {
-    #if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+    #if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
     if #available(iOS 27.1, *) {
       return hasHardwareHingeUsingReservedRegions()
     }
@@ -49,7 +44,7 @@ enum DeviceInfoProbe {
     return false
   }
 
-  #if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+  #if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
   @available(iOS 27.1, *)
   @MainActor
   private static func hasHardwareHingeUsingReservedRegions() -> Bool {

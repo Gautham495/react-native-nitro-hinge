@@ -115,15 +115,10 @@ enum HingeStateProbe {
     // ships a future N-fold device this same code returns N-1 entries
     // without any change — that's the whole point of the abstraction.
     //
-    // COMPILE-TIME GATE: as of Sept 2026, iOS 27.1 SDK is still in
-    // beta. Xcode 27.0 does NOT know about `reservedRegions(kind:)`,
-    // so we can't unconditionally call it — the file won't compile.
-    // Gate on Xcode/SDK version until 27.1 beta lands, then flip the
-    // flag on and the real path takes over.
-    //
-    // Runtime gate (#available) is still needed because a binary
-    // built against the 27.1 SDK can run on 26 devices.
-    #if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+    // HINGE_IOS_27_1_SDK comes from the podspec when the active Xcode
+    // has the iOS 27.1 SDK. #available is still needed at runtime
+    // because the same binary can run on older iOS.
+    #if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
     if #available(iOS 27.1, *) {
       return readFoldFeaturesUsingReservedRegions(window: window)
     }
@@ -131,25 +126,12 @@ enum HingeStateProbe {
     return []
   }
 
-  /// Real implementation, gated to iOS 27.1 SDK availability.
-  /// Once Xcode 27.1 is on your machine, define HINGE_IOS_27_1_SDK
-  /// in the podspec:
-  ///
-  ///   s.pod_target_xcconfig = {
-  ///     "GCC_PREPROCESSOR_DEFINITIONS" => "HINGE_IOS_27_1_SDK=1",
-  ///     "SWIFT_ACTIVE_COMPILATION_CONDITIONS" => "HINGE_IOS_27_1_SDK"
-  ///   }
-  ///
-  /// and the fold path lights up on hardware that supports it.
-  #if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+  #if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
   @available(iOS 27.1, *)
   @MainActor
   private static func readFoldFeaturesUsingReservedRegions(
     window: UIWindow
   ) -> [FoldFeature] {
-    // The real API: view.reservedRegions(kind: .division).
-    // Returns an array of UIReservedRegion (or similar — final name
-    // pending Xcode 27.1 beta), each with a frame in view coordinates.
     let regions = window.reservedRegions(kind: .division, options: [.includeInactive])
 
     return regions.map { region in
