@@ -163,13 +163,14 @@ enum HingeStateProbe {
 
   // MARK: - Fallback
 
+  /// No window yet. Zeros like Android, not a guess at some iPhone.
   private static func fallbackState() -> HingeState {
     return HingeState(
       widthClass: .compact,
       heightClass: .medium,
-      windowWidth: 390,
-      windowHeight: 844,
-      safeInsets: SafeInsets(top: 47, right: 0, bottom: 34, left: 0),
+      windowWidth: 0,
+      windowHeight: 0,
+      safeInsets: SafeInsets(top: 0, right: 0, bottom: 0, left: 0),
       foldFeatures: [],
       fontScale: 1.0
     )

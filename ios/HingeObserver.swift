@@ -113,6 +113,9 @@ final class HingeObserver: NSObject, @unchecked Sendable {
         attachKVO(to: windowScene)
       }
     }
+
+    // The snapshot taken at init may predate the window.
+    scheduleRefresh()
   }
 
   @MainActor
