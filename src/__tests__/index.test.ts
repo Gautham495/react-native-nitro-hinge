@@ -250,4 +250,59 @@ describe('useHinge', () => {
 
     expect(mockListeners.size).toBe(0);
   });
+
+  it('shares one native listener between callers', async () => {
+    const first = await renderHook(() => useHinge());
+    const second = await renderHook(() => useHinge());
+    expect(mockListeners.size).toBe(1);
+
+    await first.unmount();
+    expect(mockListeners.size).toBe(1);
+
+    await second.unmount();
+    expect(mockListeners.size).toBe(0);
+  });
+
+  it('skips a render when native repeats the same state', async () => {
+    let renders = 0;
+    await renderHook(() => {
+      renders += 1;
+      return useHinge();
+    });
+    const before = renders;
+
+    await act(() => emit(makeState()));
+
+    expect(renders).toBe(before);
+  });
+
+  it('keeps the reference of fields that did not change', async () => {
+    const folds = [makeFold({ state: 'halfOpened' })];
+    mockState = makeState({ foldFeatures: folds });
+    const { result } = await renderHook(() => useHinge());
+    const initial = result.current;
+
+    await act(() =>
+      emit(
+        makeState({
+          windowWidth: 673,
+          foldFeatures: [makeFold({ state: 'halfOpened' })],
+        })
+      )
+    );
+
+    expect(result.current.windowWidth).toBe(673);
+    expect(result.current.foldFeatures).toBe(initial.foldFeatures);
+    expect(result.current.safeInsets).toBe(initial.safeInsets);
+  });
+
+  it('reads changes that happened while nobody listened', async () => {
+    const first = await renderHook(() => useHinge());
+    await first.unmount();
+
+    mockState = makeState({ widthClass: 'expanded', windowWidth: 1024 });
+    const { result } = await renderHook(() => useHinge());
+
+    expect(result.current.widthClass).toBe('expanded');
+  });
 });

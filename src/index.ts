@@ -1,7 +1,8 @@
 import { NitroModules } from 'react-native-nitro-modules';
-import { useEffect, useState } from 'react';
+import { useSyncExternalStore } from 'react';
 import { PixelRatio } from 'react-native';
 import type { Hinge, HingeState } from './Hinge.nitro';
+import { createHingeStore } from './store';
 
 // Re-export public types so consumers don't touch the .nitro.ts spec.
 export type {
@@ -28,21 +29,18 @@ export type {
  */
 export const hinge = NitroModules.createHybridObject<Hinge>('Hinge');
 
+const store = createHingeStore(hinge);
+
 /**
- * Reactive hook. Subscribes to Hinge state changes and re-renders
- * on fold, rotate, split view resize, dynamic type change, etc.
+ * Reactive hook. Re-renders on fold, rotate, split view resize, dynamic
+ * type change, etc. Every caller shares one native listener.
  */
 export function useHinge(): HingeState {
-  const [state, setState] = useState<HingeState>(() => hinge.getState());
-
-  useEffect(() => {
-    const sub = hinge.addChangeListener(setState);
-    // Sync once on mount in case state changed between snapshot and listener.
-    setState(hinge.getState());
-    return () => sub.remove();
-  }, []);
-
-  return state;
+  return useSyncExternalStore(
+    store.subscribe,
+    store.getSnapshot,
+    store.getSnapshot
+  );
 }
 
 // === Utility helpers — questions about the current layout, not the device ===
