@@ -1,3 +1,4 @@
+import { useEffect, useMemo, useRef, useSyncExternalStore } from 'react';
 import type { ChangeSubscription, Hinge, HingeState } from './Hinge.nitro';
 
 export type HingeSource = Pick<Hinge, 'getState' | 'addChangeListener'>;
@@ -55,6 +56,46 @@ export function createHingeStore(source: HingeSource): HingeStore {
   };
 }
 
+/**
+ * `useSyncExternalStore` with a selector. Re-renders only when `isEqual`
+ * says the selected value changed.
+ */
+export function useStoreSelector<T>(
+  store: HingeStore,
+  selector: (state: HingeState) => T,
+  isEqual: (a: T, b: T) => boolean = Object.is
+): T {
+  // The last committed selection. An equal result returns this reference
+  // even when an inline selector changes identity on every render.
+  const committed = useRef<{ value: T } | null>(null);
+
+  const getSelection = useMemo(() => {
+    let memo: { state: HingeState; value: T } | null = null;
+    return (): T => {
+      const state = store.getSnapshot();
+      if (memo !== null && memo.state === state) return memo.value;
+      const next = selector(state);
+      const prev = memo ?? committed.current;
+      const value =
+        prev !== null && isEqual(prev.value, next) ? prev.value : next;
+      memo = { state, value };
+      return value;
+    };
+  }, [store, selector, isEqual]);
+
+  const value = useSyncExternalStore(
+    store.subscribe,
+    getSelection,
+    getSelection
+  );
+
+  useEffect(() => {
+    committed.current = { value };
+  }, [value]);
+
+  return value;
+}
+
 function shareUnchanged(prev: HingeState, next: HingeState): HingeState {
   let changed = false;
   const shared = { ...next };
@@ -83,6 +124,24 @@ function deepEqual(a: unknown, b: unknown): boolean {
     (key) =>
       Object.hasOwn(b, key) &&
       deepEqual(
+        (a as Record<string, unknown>)[key],
+        (b as Record<string, unknown>)[key]
+      )
+  );
+}
+
+/** Compares two values' own enumerable properties with `Object.is`, one level deep. */
+export function shallowEqual<T>(a: T, b: T): boolean {
+  if (Object.is(a, b)) return true;
+  if (typeof a !== 'object' || typeof b !== 'object' || !a || !b) {
+    return false;
+  }
+  const aKeys = Object.keys(a);
+  if (aKeys.length !== Object.keys(b).length) return false;
+  return aKeys.every(
+    (key) =>
+      Object.hasOwn(b, key) &&
+      Object.is(
         (a as Record<string, unknown>)[key],
         (b as Record<string, unknown>)[key]
       )
