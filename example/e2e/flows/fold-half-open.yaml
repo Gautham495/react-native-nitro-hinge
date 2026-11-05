@@ -1,0 +1,20 @@
+appId: ${APP_ID}
+---
+- assertVisible:
+    id: "posture"
+    text: "true / false"
+- scrollUntilVisible:
+    element:
+      id: "fold-0-state"
+      text: "halfOpened"
+- scrollUntilVisible:
+    element:
+      id: "fold-0-separating"
+      text: "true"
+- scrollUntilVisible:
+    element:
+      id: "fold-0-occlusion"
+      text: "none"
+- scrollUntilVisible:
+    element: "Hinge Demo"
+    direction: UP

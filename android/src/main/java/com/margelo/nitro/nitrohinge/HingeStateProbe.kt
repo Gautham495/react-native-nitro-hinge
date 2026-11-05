@@ -1,6 +1,5 @@
 package com.margelo.nitro.nitrohinge
 
-import android.util.Log
 import androidx.window.layout.FoldingFeature
 
 /**
@@ -12,17 +11,14 @@ import androidx.window.layout.FoldingFeature
  */
 object HingeStateProbe {
 
-  private const val TAG = "Hinge"
-
   // Material window size class breakpoints (dp).
   private const val WIDTH_MEDIUM_DP = 600.0
   private const val WIDTH_EXPANDED_DP = 840.0
   private const val HEIGHT_MEDIUM_DP = 480.0
   private const val HEIGHT_EXPANDED_DP = 900.0
 
-  fun map(source: WindowFoldSource.State, fontScale: Double): HingeState {
-    val density = if (source.metrics.density > 0f) source.metrics.density else 1f
-    val d = density.toDouble()
+  fun map(source: WindowFoldSource.State): HingeState {
+    val d = if (source.metrics.density > 0f) source.metrics.density.toDouble() else 1.0
     val widthDp = source.metrics.widthPx / d
     val heightDp = source.metrics.heightPx / d
 
@@ -39,29 +35,25 @@ object HingeStateProbe {
           else -> FoldOrientation.VERTICAL
         },
         state = if (input.isHalfOpened) FoldState.HALFOPENED else FoldState.FLAT,
-        occlusionType = OcclusionType.NONE,
+        occlusionType = if (input.isOccluding) OcclusionType.FULL else OcclusionType.NONE,
         isSeparating = input.isSeparating,
       )
     }.toTypedArray()
 
-    val safeInsets = insetsFromCutouts(source.cutouts, source.metrics, d)
-
-    val state = HingeState(
+    return HingeState(
       widthClass = widthSizeClass(widthDp),
       heightClass = heightSizeClass(heightDp),
       windowWidth = widthDp,
       windowHeight = heightDp,
-      safeInsets = safeInsets,
+      safeInsets = SafeInsets(
+        top = source.insets.top / d,
+        right = source.insets.right / d,
+        bottom = source.insets.bottom / d,
+        left = source.insets.left / d,
+      ),
       foldFeatures = foldFeatures,
-      fontScale = fontScale,
+      fontScale = source.fontScale.toDouble(),
     )
-
-    Log.d(
-      TAG,
-      "HingeStateProbe.map: ${state.widthClass} ${state.windowWidth}x${state.windowHeight} folds=${foldFeatures.size}"
-    )
-
-    return state
   }
 
   fun fallback(): HingeState = HingeState(
@@ -84,31 +76,5 @@ object HingeStateProbe {
     heightDp < HEIGHT_MEDIUM_DP -> HeightSizeClass.COMPACT
     heightDp < HEIGHT_EXPANDED_DP -> HeightSizeClass.MEDIUM
     else -> HeightSizeClass.EXPANDED
-  }
-
-  private fun insetsFromCutouts(
-    cutouts: List<PxRect>,
-    metrics: WindowFoldSource.Metrics,
-    density: Double,
-  ): SafeInsets {
-    if (cutouts.isEmpty()) {
-      return SafeInsets(top = 24.0, right = 0.0, bottom = 0.0, left = 0.0)
-    }
-    var top = 0
-    var bottom = 0
-    var left = 0
-    var right = 0
-    for (c in cutouts) {
-      if (c.top == 0) top = maxOf(top, c.height)
-      if (c.bottom == metrics.heightPx) bottom = maxOf(bottom, c.height)
-      if (c.left == 0) left = maxOf(left, c.width)
-      if (c.right == metrics.widthPx) right = maxOf(right, c.width)
-    }
-    return SafeInsets(
-      top = maxOf(top / density, 24.0),
-      right = right / density,
-      bottom = bottom / density,
-      left = left / density,
-    )
   }
 }

@@ -1,0 +1,13 @@
+appId: ${APP_ID}
+---
+- launchApp:
+    clearState: true
+- assertVisible: "Hinge Demo"
+- assertVisible:
+    id: "width-class"
+    text: "compact|medium|expanded"
+# The runner passes the expected pattern. Edge-to-edge content has a
+# bottom inset; content laid out inside the bars has none.
+- assertVisible:
+    id: "safe-insets"
+    text: ${INSETS}

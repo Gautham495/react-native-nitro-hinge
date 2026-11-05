@@ -88,7 +88,7 @@ from compact to expanded when the inner display becomes available.
 | Platform            | Signals | Reactive updates | Fold detection | Notes                                                                                                                |
 | ------------------- | ------- | ---------------- | -------------- | -------------------------------------------------------------------------------------------------------------------- |
 | **iOS 13.4 – 26**   | ✅      | ✅               | n/a            | Size class, safe insets, font scale, orientation.                                                                    |
-| **iOS 27.1+**       | ✅      | ✅               | ✅             | Full `reservedRegions(kind: .division)` on Duo. Requires Xcode 27.1 beta and `HINGE_IOS_27_1_SDK=1` in podspec.      |
+| **iOS 27.1+**       | ✅      | ✅               | ✅             | Full `reservedRegions(kind: .division)` on Duo. Needs Xcode 27.1+; `pod install` turns it on.                        |
 | **iPadOS**          | ✅      | ✅               | n/a            | Split View, Stage Manager, Slide Over all reflow correctly.                                                          |
 | **Android API 24+** | ✅      | ✅               | ✅             | Full `WindowInfoTracker` + `FoldingFeature` via `WindowFoldSource`. Verified on Pixel 10 Pro Fold API 37.2 emulator. |
 
@@ -262,10 +262,12 @@ Requires:
 - Xcode 16.4+ (Xcode 27.1 beta for iPhone Duo fold detection)
 - Nitro 0.37+
 
-Without this flag, Hinge builds and ships against Xcode 27.0 SDK
-just fine — you get every non-fold signal (size class, safe insets,
-orientation, font scale). `foldFeatures` returns empty until the
-flag is enabled and you're building against 27.1.
+`pod install` turns fold detection on when the active Xcode has the iOS
+27.1 SDK. Set `HINGE_IOS_27_1_SDK=1` or `0` before `pod install` to force
+it either way. After switching to an older Xcode, run `pod install` again,
+or the build fails on the 27.1 APIs. Without the 27.1 SDK, Hinge still
+builds and reports every non-fold signal (size class, safe insets,
+orientation, font scale), and `foldFeatures` stays empty.
 
 ## Quick start
 
@@ -325,6 +327,12 @@ hinge.hingeAngle; // continuous angle for animations only (nullable)
 hinge.fontScale; // OS Dynamic Type / Configuration.fontScale
 hinge.deviceInfo; // { platformVersion, model, hasHardwareHinge } — analytics only
 ```
+
+On Android, `safeInsets` is the part of the system bars and display cutout
+that overlaps your app's content. With edge-to-edge (forced on Android 15+
+for apps targeting SDK 35 or higher) that's the full bar size. When the
+content is laid out inside the bars, as on older versions without
+edge-to-edge, every inset is 0.
 
 ### Scaling helpers
 

@@ -13,6 +13,7 @@ import android.os.Looper
 import android.view.View
 import android.view.ViewTreeObserver
 import androidx.core.util.Consumer
+import androidx.core.view.WindowInsetsCompat
 import androidx.window.java.layout.WindowInfoTrackerCallbackAdapter
 import androidx.window.layout.FoldingFeature
 import androidx.window.layout.WindowInfoTracker
@@ -23,8 +24,9 @@ import java.util.concurrent.Executor
 
 /**
  * Shared per-activity window state source: FoldingFeature list from Jetpack
- * WindowManager, display cutouts, window metrics, and (when a client asks
- * for it) the hinge angle sensor.
+ * WindowManager, the system bar and cutout insets over the app content,
+ * window metrics, font scale, and (when a client asks for it) the hinge
+ * angle sensor.
  *
  * Refcounted — the first acquire() starts observation, the last release()
  * stops it and evicts the source from the process map.
@@ -40,7 +42,7 @@ import java.util.concurrent.Executor
  *
  * Main thread only. All callbacks fire on main.
  */
-class WindowFoldSource private constructor(private val activity: Activity) {
+class WindowFoldSource private constructor(val activity: Activity) {
 
   data class Metrics(val widthPx: Int, val heightPx: Int, val density: Float)
 
@@ -48,21 +50,23 @@ class WindowFoldSource private constructor(private val activity: Activity) {
     val bounds: PxRect,
     val isHalfOpened: Boolean,
     val isSeparating: Boolean,
+    val isOccluding: Boolean,
     val orientation: FoldingFeature.Orientation,
   )
 
   data class State(
     val folds: List<FoldFeatureInput>,
-    val cutouts: List<PxRect>,
+    val insets: PxInsets,
     val metrics: Metrics,
+    val fontScale: Float,
     val hingeAngle: Double?,
   )
 
   fun interface Listener {
-    fun onFoldSourceChanged()
+    fun onFoldSourceChanged(state: State)
   }
 
-  var state: State = State(emptyList(), emptyList(), Metrics(0, 0, 1f), lastHingeAngle)
+  var state: State = State(lastFolds, lastInsets, Metrics(0, 0, 1f), 1f, lastHingeAngle)
     private set
 
   /** Incremented on every state change; downstream can skip recompute cheaply. */
@@ -71,7 +75,7 @@ class WindowFoldSource private constructor(private val activity: Activity) {
 
   private val listeners = LinkedHashSet<Listener>()
   private val hingeClients = HashSet<Listener>()
-  private var folds: List<FoldFeatureInput> = emptyList()
+  private var folds: List<FoldFeatureInput> = lastFolds
   private var hingeAngle: Double? = lastHingeAngle
   private var hingeRegistered = false
 
@@ -90,9 +94,11 @@ class WindowFoldSource private constructor(private val activity: Activity) {
         bounds = PxRect(b.left, b.top, b.right, b.bottom),
         isHalfOpened = feature.state == FoldingFeature.State.HALF_OPENED,
         isSeparating = feature.isSeparating,
+        isOccluding = feature.occlusionType == FoldingFeature.OcclusionType.FULL,
         orientation = feature.orientation,
       )
     }
+    lastFolds = folds
     refresh()
   }
 
@@ -157,12 +163,12 @@ class WindowFoldSource private constructor(private val activity: Activity) {
   }
 
   private fun refresh() {
-    val next = State(folds, readCutouts(), readMetrics(), hingeAngle)
+    val next = State(folds, readInsets(), readMetrics(), readFontScale(), hingeAngle)
     if (next == state) return
     state = next
     version += 1
     // Copy: a listener may release itself while being notified.
-    listeners.toList().forEach { it.onFoldSourceChanged() }
+    listeners.toList().forEach { it.onFoldSourceChanged(next) }
   }
 
   private fun readMetrics(): Metrics {
@@ -170,11 +176,21 @@ class WindowFoldSource private constructor(private val activity: Activity) {
     return Metrics(m.bounds.width(), m.bounds.height(), m.density)
   }
 
-  private fun readCutouts(): List<PxRect> {
-    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) return emptyList()
-    val cutout = decorView.rootWindowInsets?.displayCutout ?: return emptyList()
-    return cutout.boundingRects.map { PxRect(it.left, it.top, it.right, it.bottom) }
+  private fun readInsets(): PxInsets {
+    // A recreated Activity has no insets until its first layout.
+    val raw = decorView.rootWindowInsets ?: return lastInsets
+    val content = activity.findViewById<View>(android.R.id.content)
+    if (content == null || !content.isLaidOut) return lastInsets
+    val bars = WindowInsetsCompat.toWindowInsetsCompat(raw, decorView)
+      .getInsets(WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.displayCutout())
+    val origin = IntArray(2).also { content.getLocationInWindow(it) }
+    val bounds = PxRect(origin[0], origin[1], origin[0] + content.width, origin[1] + content.height)
+    return PxInsets(bars.left, bars.top, bars.right, bars.bottom)
+      .overlapping(bounds, decorView.width, decorView.height)
+      .also { lastInsets = it }
   }
+
+  private fun readFontScale(): Float = activity.resources.configuration.fontScale
 
   private fun hingeSensor(): Sensor? =
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -187,11 +203,36 @@ class WindowFoldSource private constructor(private val activity: Activity) {
     /** Process-wide last hinge reading; seeds new sources so paused/resumed apps don't flicker. */
     private var lastHingeAngle: Double? = null
 
+    /**
+     * Process-wide last folds and insets. A recreated Activity reports them
+     * a frame or two late, and JS would see none in between.
+     */
+    private var lastFolds: List<FoldFeatureInput> = emptyList()
+    private var lastInsets: PxInsets = PxInsets.ZERO
+
     fun acquire(activity: Activity, listener: Listener, wantsHingeAngle: Boolean): WindowFoldSource {
       val source = sources.getOrPut(activity) { WindowFoldSource(activity) }
       source.add(listener, wantsHingeAngle)
       return source
     }
+  }
+}
+
+data class PxInsets(val left: Int, val top: Int, val right: Int, val bottom: Int) {
+  /**
+   * The part of these window insets that still covers [content], a rect in
+   * window coordinates. Without edge-to-edge the content already sits
+   * inside the system bars, so this is zero there.
+   */
+  fun overlapping(content: PxRect, windowWidth: Int, windowHeight: Int) = PxInsets(
+    left = maxOf(0, left - content.left),
+    top = maxOf(0, top - content.top),
+    right = maxOf(0, right - (windowWidth - content.right)),
+    bottom = maxOf(0, bottom - (windowHeight - content.bottom)),
+  )
+
+  companion object {
+    val ZERO = PxInsets(0, 0, 0, 0)
   }
 }
 

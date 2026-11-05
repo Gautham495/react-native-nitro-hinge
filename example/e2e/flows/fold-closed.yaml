@@ -1,0 +1,8 @@
+appId: ${APP_ID}
+---
+- assertVisible:
+    id: "width-class"
+    text: "compact"
+- assertVisible:
+    id: "has-active-fold"
+    text: "false"

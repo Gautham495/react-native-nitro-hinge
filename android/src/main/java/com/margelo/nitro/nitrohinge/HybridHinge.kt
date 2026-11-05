@@ -1,15 +1,12 @@
 package com.margelo.nitro.nitrohinge
 
-import android.content.res.Configuration
 import android.util.Log
-import com.margelo.nitro.NitroModules
-import com.margelo.nitro.core.HybridObject
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicLong
 
 class HybridHinge : HybridHingeSpec() {
 
-  private val lock = Any()
+  // Written on main by HingeObserver, read from the JS thread.
   @Volatile
   private var cachedState: HingeState = HingeStateProbe.fallback()
   private val listeners = ConcurrentHashMap<Long, (HingeState) -> Unit>()
@@ -45,31 +42,16 @@ class HybridHinge : HybridHingeSpec() {
   // === Called by HingeObserver on WindowFoldSource change ===
 
   fun onSourceChanged(source: WindowFoldSource.State) {
-    try {
-      val fontScale = readFontScale()
-      val next = HingeStateProbe.map(source, fontScale)
-      synchronized(lock) {
-        if (next == cachedState) return
-        cachedState = next
+    val next = HingeStateProbe.map(source)
+    if (next == cachedState) return
+    cachedState = next
+    for (cb in listeners.values.toList()) {
+      try {
+        cb(next)
+      } catch (e: Throwable) {
+        Log.e("Hinge", "HybridHinge: JS callback threw", e)
       }
-      val snapshot = listeners.values.toList()
-      Log.d("Hinge", "HybridHinge.onSourceChanged: notifying ${snapshot.size} JS listeners")
-      for (cb in snapshot) {
-        try {
-          cb(next)
-        } catch (e: Throwable) {
-          Log.e("Hinge", "HybridHinge: JS callback threw", e)
-        }
-      }
-    } catch (e: Throwable) {
-      Log.e("Hinge", "HybridHinge.onSourceChanged: failed", e)
     }
-  }
-
-  private fun readFontScale(): Double {
-    val ctx = NitroModules.applicationContext ?: return 1.0
-    val cfg: Configuration = ctx.resources.configuration
-    return cfg.fontScale.toDouble()
   }
 
   override fun dispose() {

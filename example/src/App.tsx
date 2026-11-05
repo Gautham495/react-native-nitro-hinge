@@ -156,33 +156,56 @@ function StatusBlock({
         backgroundColor: 'white',
       }}
     >
-      <Row label="Width class" value={state.widthClass} />
-      <Row label="Height class" value={state.heightClass} />
+      <Row label="Width class" value={state.widthClass} testID="width-class" />
+      <Row
+        label="Height class"
+        value={state.heightClass}
+        testID="height-class"
+      />
       <Row
         label="Window"
         value={`${Math.round(state.windowWidth)} × ${Math.round(state.windowHeight)}`}
+        testID="window"
       />
       <Row label="Content width" value={`${Math.round(contentWidth())}`} />
       <Row
         label="Safe insets"
         value={`t${Math.round(state.safeInsets.top)} r${Math.round(state.safeInsets.right)} b${Math.round(state.safeInsets.bottom)} l${Math.round(state.safeInsets.left)}`}
+        testID="safe-insets"
       />
-      <Row label="Font scale" value={state.fontScale.toFixed(2)} />
+      <Row
+        label="Font scale"
+        value={state.fontScale.toFixed(2)}
+        testID="font-scale"
+      />
       <Row label="Columns for this width" value={String(columns)} />
       <Row
         label="isCompact / isWide"
         value={`${isCompactWidth()} / ${isWide()}`}
       />
-      <Row label="Has active fold" value={String(hasActiveFold())} />
+      <Row
+        label="Has active fold"
+        value={String(hasActiveFold())}
+        testID="has-active-fold"
+      />
       <Row
         label="Book / Tabletop"
         value={`${isBookPosture()} / ${isTabletopPosture()}`}
+        testID="posture"
       />
     </View>
   );
 }
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  testID,
+}: {
+  label: string;
+  value: string;
+  testID?: string;
+}) {
   return (
     <View
       style={{
@@ -192,7 +215,9 @@ function Row({ label, value }: { label: string; value: string }) {
       }}
     >
       <Text style={{ fontSize: font(14), color: '#666' }}>{label}</Text>
-      <Text style={{ fontSize: font(14), fontWeight: '500' }}>{value}</Text>
+      <Text style={{ fontSize: font(14), fontWeight: '500' }} testID={testID}>
+        {value}
+      </Text>
     </View>
   );
 }
@@ -230,10 +255,22 @@ function HingeInfo({
       >
         {total > 1 ? `Fold ${index + 1} of ${total}` : 'Active fold detected'}
       </Text>
-      <Row label="Orientation" value={fold.orientation} />
-      <Row label="State" value={fold.state} />
-      <Row label="Is separating" value={String(fold.isSeparating)} />
-      <Row label="Occlusion" value={fold.occlusionType} />
+      <Row
+        label="Orientation"
+        value={fold.orientation}
+        testID={`fold-${index}-orientation`}
+      />
+      <Row label="State" value={fold.state} testID={`fold-${index}-state`} />
+      <Row
+        label="Is separating"
+        value={String(fold.isSeparating)}
+        testID={`fold-${index}-separating`}
+      />
+      <Row
+        label="Occlusion"
+        value={fold.occlusionType}
+        testID={`fold-${index}-occlusion`}
+      />
       <Row
         label="Bounds"
         value={`x${Math.round(fold.bounds.x)} y${Math.round(fold.bounds.y)} w${Math.round(fold.bounds.width)} h${Math.round(fold.bounds.height)}`}

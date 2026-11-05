@@ -111,7 +111,7 @@ final class HingeObserver: NSObject {
 
   @MainActor
   private func attachKVO(to scene: UIWindowScene) {
-    #if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+    #if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
     if #available(iOS 27.1, *) {
       attachRegionProbe(to: scene)
     }
@@ -177,7 +177,7 @@ final class HingeObserver: NSObject {
     }
   }
 
-  #if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+  #if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
   @available(iOS 27.1, *)
   @MainActor
   private func attachRegionProbe(to scene: UIWindowScene) {
@@ -224,7 +224,7 @@ private final class Weak<T: AnyObject> {
   init(_ value: T) { self.value = value }
 }
 
-#if compiler(>=6.1) && canImport(UIKit) && HINGE_IOS_27_1_SDK
+#if HINGE_IOS_27_1_SDK && !targetEnvironment(macCatalyst)
 // effectiveGeometry doesn't change when the device folds partway. UIKit calls
 // updateConstraints() again whenever the reserved regions read there change,
 // and layoutSubviews and safeAreaInsetsDidChange fire once the window settles

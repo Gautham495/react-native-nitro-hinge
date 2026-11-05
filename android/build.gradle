@@ -40,6 +40,12 @@ apply from: '../nitrogen/generated/android/nitrohinge+autolinking.gradle'
 
 apply plugin: "com.facebook.react"
 
+// Without this, codegen crawls the monorepo node_modules and regenerates
+// React Native's own specs, which clash with the app's at dex merge.
+react {
+  jsRootDir = file("../src/")
+}
+
 android {
   namespace "com.margelo.nitro.nitrohinge"
 
@@ -131,4 +137,6 @@ dependencies {
 
   implementation "androidx.window:window:1.5.1"
   implementation "androidx.window:window-java:1.5.1"
+
+  testImplementation "junit:junit:4.13.2"
 }

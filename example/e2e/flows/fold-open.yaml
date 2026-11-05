@@ -1,0 +1,19 @@
+appId: ${APP_ID}
+---
+- assertVisible:
+    id: "width-class"
+    text: "medium|expanded"
+- assertVisible:
+    id: "posture"
+    text: "false / false"
+- scrollUntilVisible:
+    element:
+      id: "fold-0-state"
+      text: "flat"
+- scrollUntilVisible:
+    element:
+      id: "fold-0-occlusion"
+      text: "none"
+- scrollUntilVisible:
+    element: "Hinge Demo"
+    direction: UP
