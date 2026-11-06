@@ -9,6 +9,8 @@ class HybridHinge : HybridHingeSpec() {
   // Written on main by HingeObserver, read from the JS thread.
   @Volatile
   private var cachedState: HingeState = HingeStateProbe.fallback()
+  @Volatile
+  private var cachedAngle: Double? = null
   private val listeners = ConcurrentHashMap<Long, (HingeState) -> Unit>()
   private val nextId = AtomicLong(0)
   private val cachedDeviceInfo: DeviceInfo = DeviceInfoProbe.read()
@@ -26,7 +28,7 @@ class HybridHinge : HybridHingeSpec() {
   override val safeInsets: SafeInsets get() = cachedState.safeInsets
   override val fontScale: Double get() = cachedState.fontScale
   override val foldFeatures: Array<FoldFeature> get() = cachedState.foldFeatures
-  override val hingeAngle: Double? get() = null // v0.3 — via WindowFoldSource hinge sensor
+  override val hingeAngle: Double? get() = cachedAngle
   override val deviceInfo: DeviceInfo get() = cachedDeviceInfo
 
   override fun getState(): HingeState = cachedState
@@ -52,6 +54,10 @@ class HybridHinge : HybridHingeSpec() {
         Log.e("Hinge", "HybridHinge: JS callback threw", e)
       }
     }
+  }
+
+  fun onHingeAngleChanged(degrees: Double?) {
+    cachedAngle = degrees
   }
 
   override fun dispose() {
