@@ -24,6 +24,7 @@ namespace margelo::nitro::nitrohinge {
       prototype.registerHybridGetter("hingeAngle", &HybridHingeSpec::getHingeAngle);
       prototype.registerHybridGetter("deviceInfo", &HybridHingeSpec::getDeviceInfo);
       prototype.registerHybridMethod("addChangeListener", &HybridHingeSpec::addChangeListener);
+      prototype.registerHybridMethod("addHingeAngleListener", &HybridHingeSpec::addHingeAngleListener);
       prototype.registerHybridMethod("getState", &HybridHingeSpec::getState);
     });
   }

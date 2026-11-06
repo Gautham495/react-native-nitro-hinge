@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ScrollView, StyleSheet, Text, View, SafeAreaView } from 'react-native';
 
 import {
+  hinge,
   useHinge,
   font,
   space,
@@ -18,6 +19,8 @@ import {
 } from 'react-native-nitro-hinge';
 
 import type { FoldFeature } from 'react-native-nitro-hinge';
+
+import { AnimatedDemo } from './AnimatedDemo';
 
 // Configure once at app start. If your design mocks were drawn at
 // 375pt (older iPhone), set that here. Default is 390.
@@ -100,6 +103,8 @@ export default function App() {
         <Text style={staticStyles.title}>Hinge Demo</Text>
 
         <StatusBlock state={state} columns={columns} />
+
+        <AnimatedDemo />
 
         <View style={{ marginTop: space(24) }}>
           <Text style={staticStyles.title}>Adaptive layout</Text>
@@ -193,7 +198,26 @@ function StatusBlock({
         value={`${isBookPosture()} / ${isTabletopPosture()}`}
         testID="posture"
       />
+      <HingeAngleRow />
     </View>
+  );
+}
+
+function HingeAngleRow() {
+  const [angle, setAngle] = useState(hinge.hingeAngle);
+
+  // Re-renders on every angle change. That's fine for a readout.
+  useEffect(() => {
+    const sub = hinge.addHingeAngleListener(setAngle);
+    return () => sub.remove();
+  }, []);
+
+  return (
+    <Row
+      label="Hinge angle"
+      value={angle === undefined ? 'none' : `${Math.round(angle)}°`}
+      testID="hinge-angle"
+    />
   );
 }
 

@@ -186,11 +186,8 @@ final class HingeObserver: NSObject, @unchecked Sendable {
     observers.probe = probe
 
     let interaction = UIHingeInteraction { [weak self] _, update in
-      guard let self = self else { return }
       let degrees = update.hinge.map { Double($0.angle) * 180 / .pi }
-      self.lock.lock()
-      self.latestHingeAngle = degrees
-      self.lock.unlock()
+      self?.handleHingeAngle(degrees)
     }
     window.addInteraction(interaction)
     observers.hinge = interaction
@@ -198,6 +195,21 @@ final class HingeObserver: NSObject, @unchecked Sendable {
   #endif
 
   // MARK: - Fan out to attached HybridHinge instances
+
+  private func handleHingeAngle(_ degrees: Double?) {
+    lock.lock()
+    guard degrees != latestHingeAngle else {
+      lock.unlock()
+      return
+    }
+    latestHingeAngle = degrees
+    let snapshot = instances.compactMap { $0.value }
+    lock.unlock()
+
+    for hinge in snapshot {
+      hinge.hingeAngleChanged(degrees)
+    }
+  }
 
   @objc private func handleChange() {
     lock.lock()

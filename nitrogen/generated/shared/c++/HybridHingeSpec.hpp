@@ -79,6 +79,7 @@ namespace margelo::nitro::nitrohinge {
     public:
       // Methods
       virtual ChangeSubscription addChangeListener(const std::function<void(const HingeState& /* state */)>& callback) = 0;
+      virtual ChangeSubscription addHingeAngleListener(const std::function<void(std::optional<double> /* angle */)>& callback) = 0;
       virtual HingeState getState() = 0;
 
     protected:

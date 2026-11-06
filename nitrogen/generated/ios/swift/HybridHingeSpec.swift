@@ -22,6 +22,7 @@ public protocol HybridHingeSpec_protocol: HybridObject {
 
   // Methods
   func addChangeListener(callback: @escaping (_ state: HingeState) -> Void) throws -> ChangeSubscription
+  func addHingeAngleListener(callback: @escaping (_ angle: Double?) -> Void) throws -> ChangeSubscription
   func getState() throws -> HingeState
 }
 

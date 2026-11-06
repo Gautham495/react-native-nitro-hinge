@@ -2,7 +2,8 @@
   "compilerOptions": {
     "rootDir": ".",
     "paths": {
-      "react-native-nitro-hinge": ["./src/index"]
+      "react-native-nitro-hinge": ["./src/index"],
+      "react-native-nitro-hinge/reanimated": ["./src/reanimated"]
     },
     "allowUnreachableCode": false,
     "allowUnusedLabels": false,

@@ -130,6 +130,28 @@ namespace margelo::nitro::nitrohinge::bridge::swift {
     return Func_void_HingeState_Wrapper(std::move(value));
   }
   
+  // pragma MARK: std::function<void(std::optional<double> /* angle */)>
+  /**
+   * Specialized version of `std::function<void(std::optional<double>)>`.
+   */
+  using Func_void_std__optional_double_ = std::function<void(std::optional<double> /* angle */)>;
+  /**
+   * Wrapper class for a `std::function<void(std::optional<double> / * angle * /)>`, this can be used from Swift.
+   */
+  class Func_void_std__optional_double__Wrapper final {
+  public:
+    explicit Func_void_std__optional_double__Wrapper(std::function<void(std::optional<double> /* angle */)>&& func): _function(std::make_unique<std::function<void(std::optional<double> /* angle */)>>(std::move(func))) {}
+    inline void call(std::optional<double> angle) const noexcept {
+      _function->operator()(angle);
+    }
+  private:
+    std::unique_ptr<std::function<void(std::optional<double> /* angle */)>> _function;
+  } SWIFT_NONCOPYABLE;
+  Func_void_std__optional_double_ create_Func_void_std__optional_double_(void* NON_NULL swiftClosureWrapper) noexcept;
+  inline Func_void_std__optional_double__Wrapper wrap_Func_void_std__optional_double_(Func_void_std__optional_double_ value) noexcept {
+    return Func_void_std__optional_double__Wrapper(std::move(value));
+  }
+  
   // pragma MARK: std::shared_ptr<HybridHingeSpec>
   /**
    * Specialized version of `std::shared_ptr<HybridHingeSpec>`.
