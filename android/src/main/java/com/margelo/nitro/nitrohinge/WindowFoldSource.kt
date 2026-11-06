@@ -59,14 +59,23 @@ class WindowFoldSource private constructor(val activity: Activity) {
     val insets: PxInsets,
     val metrics: Metrics,
     val fontScale: Float,
-    val hingeAngle: Double?,
   )
 
-  fun interface Listener {
+  interface Listener {
     fun onFoldSourceChanged(state: State)
+
+    /** Only called for listeners acquired with wantsHingeAngle. */
+    fun onHingeAngleChanged(degrees: Double) = Unit
   }
 
-  var state: State = State(lastFolds, lastInsets, Metrics(0, 0, 1f), 1f, lastHingeAngle)
+  var state: State = State(lastFolds, lastInsets, Metrics(0, 0, 1f), 1f)
+    private set
+
+  /**
+   * Latest hinge sensor reading in degrees. Null until the sensor first
+   * reports, and always null on devices without one.
+   */
+  var hingeAngle: Double? = lastHingeAngle
     private set
 
   /** Incremented on every state change; downstream can skip recompute cheaply. */
@@ -76,7 +85,6 @@ class WindowFoldSource private constructor(val activity: Activity) {
   private val listeners = LinkedHashSet<Listener>()
   private val hingeClients = HashSet<Listener>()
   private var folds: List<FoldFeatureInput> = lastFolds
-  private var hingeAngle: Double? = lastHingeAngle
   private var hingeRegistered = false
 
   private val decorView: View
@@ -112,9 +120,13 @@ class WindowFoldSource private constructor(val activity: Activity) {
 
   private val hingeListener = object : SensorEventListener {
     override fun onSensorChanged(event: SensorEvent) {
-      hingeAngle = event.values.firstOrNull()?.toDouble()
-      lastHingeAngle = hingeAngle
-      refresh()
+      val degrees = event.values.firstOrNull()?.toDouble() ?: return
+      if (degrees == hingeAngle) return
+      hingeAngle = degrees
+      lastHingeAngle = degrees
+      // Angle ticks skip refresh(). They don't change the layout, and the
+      // sensor can report every frame while the hinge moves.
+      hingeClients.toList().forEach { it.onHingeAngleChanged(degrees) }
     }
     override fun onAccuracyChanged(sensor: Sensor?, accuracy: Int) = Unit
   }
@@ -155,7 +167,9 @@ class WindowFoldSource private constructor(val activity: Activity) {
     if (needed == hingeRegistered) return
     val sensor = hingeSensor() ?: return
     if (needed) {
-      sensorManager?.registerListener(hingeListener, sensor, SensorManager.SENSOR_DELAY_UI)
+      // GAME (20 ms) is fast enough for smooth animations. The sensor only
+      // reports changes, so it stays quiet while the hinge doesn't move.
+      sensorManager?.registerListener(hingeListener, sensor, SensorManager.SENSOR_DELAY_GAME)
     } else {
       sensorManager?.unregisterListener(hingeListener)
     }
@@ -163,7 +177,7 @@ class WindowFoldSource private constructor(val activity: Activity) {
   }
 
   private fun refresh() {
-    val next = State(folds, readInsets(), readMetrics(), readFontScale(), hingeAngle)
+    val next = State(folds, readInsets(), readMetrics(), readFontScale())
     if (next == state) return
     state = next
     version += 1

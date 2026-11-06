@@ -30,6 +30,14 @@ namespace margelo::nitro::nitrohinge::bridge::swift {
     };
   }
   
+  // pragma MARK: std::function<void(std::optional<double> /* angle */)>
+  Func_void_std__optional_double_ create_Func_void_std__optional_double_(void* NON_NULL swiftClosureWrapper) noexcept {
+    auto swiftClosure = NitroHinge::Func_void_std__optional_double_::fromUnsafe(swiftClosureWrapper);
+    return [swiftClosure = std::move(swiftClosure)](std::optional<double> angle) mutable -> void {
+      swiftClosure.call(angle);
+    };
+  }
+  
   // pragma MARK: std::shared_ptr<HybridHingeSpec>
   std::shared_ptr<HybridHingeSpec> create_std__shared_ptr_HybridHingeSpec_(void* NON_NULL swiftUnsafePointer) noexcept {
     NitroHinge::HybridHingeSpec_cxx swiftPart = NitroHinge::HybridHingeSpec_cxx::fromUnsafe(swiftUnsafePointer);
