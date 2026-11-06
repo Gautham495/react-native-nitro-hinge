@@ -25,6 +25,7 @@
     "cpp",
     "nitrogen",
     "nitro.json",
+    "skills",
     "*.podspec",
     "react-native.config.js",
     "!ios/build",
