@@ -12,6 +12,7 @@ class HybridHinge : HybridHingeSpec() {
   @Volatile
   private var cachedAngle: Double? = null
   private val listeners = ConcurrentHashMap<Long, (HingeState) -> Unit>()
+  private val angleListeners = ConcurrentHashMap<Long, (Double?) -> Unit>()
   private val nextId = AtomicLong(0)
   private val cachedDeviceInfo: DeviceInfo = DeviceInfoProbe.read()
 
@@ -33,11 +34,20 @@ class HybridHinge : HybridHingeSpec() {
 
   override fun getState(): HingeState = cachedState
 
-  override fun addChangeListener(callback: (HingeState) -> Unit): ChangeSubscription {
+  override fun addChangeListener(callback: (HingeState) -> Unit): ChangeSubscription =
+    subscribe(listeners, callback)
+
+  override fun addHingeAngleListener(callback: (Double?) -> Unit): ChangeSubscription =
+    subscribe(angleListeners, callback)
+
+  private fun <T> subscribe(
+    into: ConcurrentHashMap<Long, (T) -> Unit>,
+    callback: (T) -> Unit,
+  ): ChangeSubscription {
     val id = nextId.incrementAndGet()
-    listeners[id] = callback
+    into[id] = callback
     return ChangeSubscription(remove = {
-      listeners.remove(id)
+      into.remove(id)
     })
   }
 
@@ -47,22 +57,29 @@ class HybridHinge : HybridHingeSpec() {
     val next = HingeStateProbe.map(source)
     if (next == cachedState) return
     cachedState = next
-    for (cb in listeners.values.toList()) {
+    notify(listeners, next)
+  }
+
+  fun onHingeAngleChanged(degrees: Double?) {
+    if (degrees == cachedAngle) return
+    cachedAngle = degrees
+    notify(angleListeners, degrees)
+  }
+
+  private fun <T> notify(callbacks: ConcurrentHashMap<Long, (T) -> Unit>, value: T) {
+    for (cb in callbacks.values.toList()) {
       try {
-        cb(next)
+        cb(value)
       } catch (e: Throwable) {
         Log.e("Hinge", "HybridHinge: JS callback threw", e)
       }
     }
   }
 
-  fun onHingeAngleChanged(degrees: Double?) {
-    cachedAngle = degrees
-  }
-
   override fun dispose() {
     HingeObserver.detach(this)
     listeners.clear()
+    angleListeners.clear()
     super.dispose()
   }
 }

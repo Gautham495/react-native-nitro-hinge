@@ -18,6 +18,7 @@
 #include "JHybridHingeSpec.hpp"
 #include "JFunc_void.hpp"
 #include "JFunc_void_HingeState.hpp"
+#include "JFunc_void_std__optional_double_.hpp"
 #include <NitroModules/DefaultConstructableObject.hpp>
 
 namespace margelo::nitro::nitrohinge {
@@ -45,6 +46,7 @@ void registerAllNatives() {
   margelo::nitro::nitrohinge::JHybridHingeSpec::CxxPart::registerNatives();
   margelo::nitro::nitrohinge::JFunc_void_cxx::registerNatives();
   margelo::nitro::nitrohinge::JFunc_void_HingeState_cxx::registerNatives();
+  margelo::nitro::nitrohinge::JFunc_void_std__optional_double__cxx::registerNatives();
 
   // Register Nitro Hybrid Objects
   HybridObjectRegistry::registerHybridObjectConstructor(

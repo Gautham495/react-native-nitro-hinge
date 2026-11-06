@@ -194,7 +194,10 @@ export interface Hinge extends HybridObject<{
   readonly foldFeatures: FoldFeature[];
 
   /**
-   * Continuous hinge angle in degrees, if the device has the sensor.
+   * Continuous hinge angle in degrees, or undefined when the device has
+   * no hinge sensor. Android reads the hinge angle sensor (Android 11+).
+   * iOS reads UIHingeInteraction (iOS 27.1+, built with HINGE_IOS_27_1_SDK).
+   *
    * FOR ANIMATIONS ONLY — not for layout decisions.
    * Layout should key off foldFeatures[i].state (flat vs halfOpened).
    */
@@ -220,6 +223,18 @@ export interface Hinge extends HybridObject<{
    * mutable state between listeners.
    */
   addChangeListener(callback: (state: HingeState) => void): ChangeSubscription;
+
+  /**
+   * Subscribe to hinge angle changes. The callback gets the angle in
+   * degrees, or undefined when the window moves somewhere without a hinge,
+   * such as an external display (iOS). It can fire every frame while the
+   * hinge moves. addChangeListener callbacks don't fire for angle changes.
+   *
+   * Returns a subscription; call .remove() to unsubscribe.
+   */
+  addHingeAngleListener(
+    callback: (angle: number | undefined) => void
+  ): ChangeSubscription;
 
   // === Snapshot ===
 
