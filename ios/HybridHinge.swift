@@ -158,6 +158,11 @@ final class HybridHinge: HybridHingeSpec {
     let newState = HingeStateProbe.snapshot()
 
     stateLock.lock()
+    // UIKit often fires several of these signals for one change.
+    guard !newState.isSame(as: cachedState) else {
+      stateLock.unlock()
+      return
+    }
     cachedState = newState
     let snapshot = Array(listeners.values)
     stateLock.unlock()
@@ -165,5 +170,38 @@ final class HybridHinge: HybridHingeSpec {
     for cb in snapshot {
       cb(newState)
     }
+  }
+}
+
+// Nitro's C++ structs define ==, but Swift doesn't import it.
+private extension HingeState {
+  func isSame(as other: HingeState) -> Bool {
+    widthClass == other.widthClass
+      && heightClass == other.heightClass
+      && windowWidth == other.windowWidth
+      && windowHeight == other.windowHeight
+      && safeInsets.isSame(as: other.safeInsets)
+      && fontScale == other.fontScale
+      && foldFeatures.count == other.foldFeatures.count
+      && zip(foldFeatures, other.foldFeatures).allSatisfy { $0.isSame(as: $1) }
+  }
+}
+
+private extension SafeInsets {
+  func isSame(as other: SafeInsets) -> Bool {
+    top == other.top && right == other.right && bottom == other.bottom && left == other.left
+  }
+}
+
+private extension FoldFeature {
+  func isSame(as other: FoldFeature) -> Bool {
+    bounds.x == other.bounds.x
+      && bounds.y == other.bounds.y
+      && bounds.width == other.bounds.width
+      && bounds.height == other.bounds.height
+      && orientation == other.orientation
+      && state == other.state
+      && occlusionType == other.occlusionType
+      && isSeparating == other.isSeparating
   }
 }
