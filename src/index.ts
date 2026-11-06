@@ -1,7 +1,9 @@
 import { NitroModules } from 'react-native-nitro-modules';
-import { useEffect, useState } from 'react';
 import { PixelRatio } from 'react-native';
 import type { Hinge, HingeState } from './Hinge.nitro';
+import { createHingeStore, useStoreSelector } from './store';
+
+export { shallowEqual } from './store';
 
 // Re-export public types so consumers don't touch the .nitro.ts spec.
 export type {
@@ -28,21 +30,35 @@ export type {
  */
 export const hinge = NitroModules.createHybridObject<Hinge>('Hinge');
 
+const store = createHingeStore(hinge);
+
+const selectAll = (state: HingeState) => state;
+
 /**
- * Reactive hook. Subscribes to Hinge state changes and re-renders
- * on fold, rotate, split view resize, dynamic type change, etc.
+ * Reactive hook. Re-renders on fold, rotate, split view resize, dynamic
+ * type change, etc. Every caller shares one native listener.
+ *
+ * Pass a selector to re-render only when that slice changes:
+ *
+ *   const widthClass = useHinge((s) => s.widthClass);
+ *
+ * Unchanged fields keep their reference between updates, so selecting
+ * `foldFeatures` or `safeInsets` needs no custom `isEqual`. Pass one
+ * (`shallowEqual`, for example) when the selector builds a new object.
  */
-export function useHinge(): HingeState {
-  const [state, setState] = useState<HingeState>(() => hinge.getState());
-
-  useEffect(() => {
-    const sub = hinge.addChangeListener(setState);
-    // Sync once on mount in case state changed between snapshot and listener.
-    setState(hinge.getState());
-    return () => sub.remove();
-  }, []);
-
-  return state;
+export function useHinge<T>(
+  selector: (state: HingeState) => T,
+  isEqual?: (a: T, b: T) => boolean
+): T;
+// Declared last so ReturnType<typeof useHinge> stays HingeState.
+export function useHinge(): HingeState;
+export function useHinge<T>(
+  selector?: (state: HingeState) => T,
+  isEqual?: (a: T, b: T) => boolean
+): T {
+  // Without a selector the no-argument overload applies and T is HingeState.
+  const select = selector ?? (selectAll as (state: HingeState) => T);
+  return useStoreSelector(store, select, isEqual);
 }
 
 // === Utility helpers — questions about the current layout, not the device ===

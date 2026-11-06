@@ -25,6 +25,7 @@ import {
   isWide,
   radius,
   responsive,
+  shallowEqual,
   size,
   space,
   useHinge,
@@ -249,5 +250,111 @@ describe('useHinge', () => {
     await unmount();
 
     expect(mockListeners.size).toBe(0);
+  });
+
+  it('shares one native listener between callers', async () => {
+    const first = await renderHook(() => useHinge());
+    const second = await renderHook(() => useHinge((s) => s.widthClass));
+    expect(mockListeners.size).toBe(1);
+
+    await first.unmount();
+    expect(mockListeners.size).toBe(1);
+
+    await second.unmount();
+    expect(mockListeners.size).toBe(0);
+  });
+
+  it('skips a render when native repeats the same state', async () => {
+    let renders = 0;
+    await renderHook(() => {
+      renders += 1;
+      return useHinge();
+    });
+    const before = renders;
+
+    await act(() => emit(makeState()));
+
+    expect(renders).toBe(before);
+  });
+
+  it('re-renders a selector only when its slice changes', async () => {
+    let renders = 0;
+    const { result } = await renderHook(() => {
+      renders += 1;
+      return useHinge((s) => s.widthClass);
+    });
+    const before = renders;
+
+    await act(() => emit(makeState({ windowWidth: 400 })));
+    expect(renders).toBe(before);
+
+    await act(() => emit(makeState({ widthClass: 'medium' })));
+    expect(result.current).toBe('medium');
+    expect(renders).toBe(before + 1);
+  });
+
+  it('keeps the reference of fields that did not change', async () => {
+    const folds = [makeFold({ state: 'halfOpened' })];
+    mockState = makeState({ foldFeatures: folds });
+    const { result } = await renderHook(() => useHinge());
+    const initial = result.current;
+
+    await act(() =>
+      emit(
+        makeState({
+          windowWidth: 673,
+          foldFeatures: [makeFold({ state: 'halfOpened' })],
+        })
+      )
+    );
+
+    expect(result.current.windowWidth).toBe(673);
+    expect(result.current.foldFeatures).toBe(initial.foldFeatures);
+    expect(result.current.safeInsets).toBe(initial.safeInsets);
+  });
+
+  it('uses isEqual for selectors that build objects', async () => {
+    let renders = 0;
+    const { result } = await renderHook(() => {
+      renders += 1;
+      return useHinge(
+        (s) => ({ width: s.windowWidth, height: s.windowHeight }),
+        shallowEqual
+      );
+    });
+    const initial = result.current;
+    const before = renders;
+
+    await act(() => emit(makeState({ fontScale: 1.3 })));
+
+    expect(renders).toBe(before);
+    expect(result.current).toBe(initial);
+  });
+
+  it('reads changes that happened while nobody listened', async () => {
+    const first = await renderHook(() => useHinge());
+    await first.unmount();
+
+    mockState = makeState({ widthClass: 'expanded', windowWidth: 1024 });
+    const { result } = await renderHook(() => useHinge());
+
+    expect(result.current.widthClass).toBe('expanded');
+  });
+
+  it('keeps HingeState as the return type without a selector', () => {
+    const isHingeState: ReturnType<typeof useHinge> extends HingeState
+      ? true
+      : false = true;
+    expect(isHingeState).toBe(true);
+  });
+});
+
+describe('shallowEqual', () => {
+  it('compares one level deep', () => {
+    expect(shallowEqual({ a: 1, b: 'x' }, { a: 1, b: 'x' })).toBe(true);
+    expect(shallowEqual({ a: 1 }, { a: 2 })).toBe(false);
+    expect(shallowEqual({ a: 1 }, { a: 1, b: 2 })).toBe(false);
+    expect(shallowEqual({ a: { b: 1 } }, { a: { b: 1 } })).toBe(false);
+    expect(shallowEqual([1, 2], [1, 2])).toBe(true);
   });
 });

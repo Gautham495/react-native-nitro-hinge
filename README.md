@@ -363,8 +363,17 @@ contentHeight(); // height inside safe area
 ### Reactive hook
 
 ```typescript
-const state = useHinge(); // subscribes to all state changes
+const state = useHinge(); // re-renders on any state change
+const widthClass = useHinge((s) => s.widthClass); // only when widthClass changes
+const size = useHinge(
+  (s) => ({ width: s.windowWidth, height: s.windowHeight }),
+  shallowEqual // needed when the selector builds a new object
+);
 ```
+
+All callers share one native listener. Fields that didn't change keep
+their reference, so `useHinge((s) => s.foldFeatures)` doesn't re-render
+when only other fields change.
 
 ## What it does NOT expose (and why)
 
