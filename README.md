@@ -6,14 +6,21 @@
 
 # react-native-nitro-hinge
 
-Native size class, safe insets, and hinge geometry for React Native.
-Nitro-backed. iOS + Android. One API for phones, tablets, foldables,
-tri-folds, iPhone Duo — and whatever ships next.
+Size class, safe insets, hinge geometry and hinge angle for React Native
+on iOS and Android. It's built on Nitro, so every read is synchronous and
+works at module load. The same API covers phones, tablets, Android
+foldables, tri-folds and the iPhone Duo.
 
-> **Status: v2.0.0** — Both platforms verified end-to-end.
-> iOS across all 6 iPhone Duo poses on the Xcode 27.1 beta simulator.
-> Android across the full pose matrix (folded, book, tabletop, flat)
-> on the Pixel 10 Pro Fold API 37.2 emulator. See [Status by platform](./docs/foldables.md#status-by-platform).
+<table>
+  <tr>
+    <th>iPhone Duo</th>
+    <th>Android foldable</th>
+  </tr>
+  <tr>
+    <td><img src="./docs/img/list-detail.gif" width="420" alt="List / detail example on the iPhone Duo simulator" /></td>
+    <td><img src="./docs/img/posture.gif" width="290" alt="Posture example on an Android foldable emulator" /></td>
+  </tr>
+</table>
 
 ## Install
 
@@ -22,61 +29,284 @@ yarn add react-native-nitro-hinge react-native-nitro-modules
 cd ios && pod install
 ```
 
-Requires:
-
-- React Native 0.75+
-- iOS 13.4+ (fold geometry needs iOS 27.1+; falls back gracefully)
-- Android API 24+ (fold geometry via `androidx.window` 1.5+)
-- Xcode 16.4+ (Xcode 27.1 beta for iPhone Duo fold detection)
-- Nitro 0.37+
+Requires React Native 0.75+, Nitro 0.37+, iOS 13.4+ and Android API 24+.
+Fold geometry needs iOS 27.1 (Xcode 27.1 beta) on iOS and
+`androidx.window` 1.5+ on Android. Without them you still get size class,
+safe insets and font scale, and `foldFeatures` stays empty.
 
 `pod install` turns fold detection on when the active Xcode has the iOS
 27.1 SDK. Set `HINGE_IOS_27_1_SDK=1` or `0` before `pod install` to force
 it either way. After switching to an older Xcode, run `pod install` again,
-or the build fails on the 27.1 APIs. Without the 27.1 SDK, Hinge still
-builds and reports every non-fold signal (size class, safe insets,
-orientation, font scale), and `foldFeatures` stays empty.
+or the build fails on the 27.1 APIs.
 
-## Quick start
+The Reanimated hooks also need `react-native-reanimated` 4 and
+`react-native-worklets`. Apps that don't import
+`react-native-nitro-hinge/reanimated` don't need either.
 
-### Static styles (module load)
+## Examples
 
-```typescript
-import { StyleSheet, View, Text } from 'react-native';
-import { hinge, font, space, isWide } from 'react-native-nitro-hinge';
+The code under each GIF is the full screen from the
+[example app](./example/src/examples).
 
-const styles = StyleSheet.create({
-  container: {
-    padding: space(16),
-    flexDirection: isWide() ? 'row' : 'column',
+### List / detail
+
+Phones show the list. Wide windows, like the inner display of a
+foldable, show the open message next to it.
+
+<img src="./docs/img/list-detail.gif" width="600" alt="List / detail example" />
+
+```tsx
+import { useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import { useHinge } from 'react-native-nitro-hinge';
+
+const messages = [
+  {
+    from: 'Ana',
+    subject: 'Lunch on Friday?',
+    body: 'Noon at the usual place?',
   },
-  title: { fontSize: font(24) },
-});
+  { from: 'Leo', subject: 'Design review', body: 'Notes from today are up.' },
+  { from: 'Mia', subject: 'Flight check-in', body: 'Gate B12, boarding 9:40.' },
+] as const;
 
-function Screen() {
-  return <View style={styles.container}><Text style={styles.title}>Hi</Text></View>;
+type Message = (typeof messages)[number];
+
+export function ListDetail() {
+  const { widthClass, safeInsets } = useHinge();
+  const [open, setOpen] = useState<Message>(messages[0]);
+  const wide = widthClass !== 'compact';
+
+  return (
+    <View
+      style={{
+        flex: 1,
+        flexDirection: 'row',
+        paddingTop: safeInsets.top,
+        paddingLeft: safeInsets.left,
+        paddingRight: safeInsets.right,
+      }}
+    >
+      <View style={{ flex: 1 }}>
+        {messages.map((message) => (
+          <Pressable
+            key={message.subject}
+            onPress={() => setOpen(message)}
+            style={{
+              padding: 16,
+              backgroundColor: wide && message === open ? '#e0e7ff' : 'white',
+            }}
+          >
+            <Text style={{ fontSize: 17, fontWeight: '600' }}>
+              {message.from}
+            </Text>
+            <Text style={{ fontSize: 15, color: '#475569' }}>
+              {message.subject}
+            </Text>
+          </Pressable>
+        ))}
+      </View>
+
+      {/* Phones show the list. Wide windows show the message next to it. */}
+      {wide && (
+        <View style={{ flex: 2, padding: 24, backgroundColor: '#f8fafc' }}>
+          <Text style={{ fontSize: 24, fontWeight: '700' }}>
+            {open.subject}
+          </Text>
+          <Text style={{ marginTop: 8, fontSize: 17 }}>{open.body}</Text>
+        </View>
+      )}
+    </View>
+  );
 }
 ```
 
-### Reactive styles (reflow on fold, rotate, split view)
+### Posture
 
-```typescript
-import { useMemo } from 'react';
-import { StyleSheet, View } from 'react-native';
-import { useHinge, font, space, isWide } from 'react-native-nitro-hinge';
+When the device is half open, the screen splits at the hinge: side by
+side in book posture, stacked in tabletop posture.
 
-const makeStyles = () => StyleSheet.create({
-  container: {
-    padding: space(16),
-    flexDirection: isWide() ? 'row' : 'column',
-  },
-  title: { fontSize: font(24) },
-});
+<img src="./docs/img/posture.gif" width="360" alt="Posture example" />
 
-function Screen() {
-  const { widthClass } = useHinge();
-  const styles = useMemo(makeStyles, [widthClass]);
-  return <View style={styles.container}>...</View>;
+```tsx
+import { Text, View } from 'react-native';
+import { useHinge } from 'react-native-nitro-hinge';
+
+// Render this full screen: fold bounds are in window coordinates.
+export function Posture() {
+  const fold = useHinge((s) =>
+    s.foldFeatures.find((f) => f.state === 'halfOpened')
+  );
+
+  if (!fold) {
+    return <Pane label="Flat" />;
+  }
+
+  // Tabletop stacks the panes and book puts them side by side, with the
+  // gap on the hinge.
+  const tabletop = fold.orientation === 'horizontal';
+  const { x, y, width, height } = fold.bounds;
+
+  return (
+    <View style={{ flex: 1, flexDirection: tabletop ? 'column' : 'row' }}>
+      <View style={tabletop ? { height: y } : { width: x }}>
+        <Pane label={tabletop ? 'Video' : 'Page 1'} dark />
+      </View>
+      <View style={tabletop ? { height } : { width }} />
+      <View style={{ flex: 1 }}>
+        <Pane label={tabletop ? 'Controls' : 'Page 2'} />
+      </View>
+    </View>
+  );
+}
+
+function Pane({ label, dark = false }: { label: string; dark?: boolean }) {
+  return (
+    <View
+      style={{
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: dark ? '#0f172a' : '#e0e7ff',
+      }}
+    >
+      <Text
+        style={{
+          fontSize: 28,
+          fontWeight: '700',
+          color: dark ? 'white' : '#0f172a',
+        }}
+      >
+        {label}
+      </Text>
+    </View>
+  );
+}
+```
+
+### Lid (Reanimated)
+
+The lid follows the hinge angle on the UI thread.
+
+<img src="./docs/img/lid.gif" width="360" alt="Lid example" />
+
+```tsx
+import { View } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useAnimatedHingeAngle } from 'react-native-nitro-hinge/reanimated';
+
+export function Lid() {
+  const angle = useAnimatedHingeAngle();
+
+  // 180° lies flat, 90° stands up, 0° closes on the base.
+  const lid = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${180 - (angle.value ?? 180)}deg` }],
+  }));
+
+  return (
+    <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={{ flexDirection: 'row' }}>
+        <Animated.View
+          style={[
+            {
+              width: 140,
+              height: 12,
+              borderRadius: 6,
+              backgroundColor: '#2563eb',
+              transformOrigin: 'right',
+            },
+            lid,
+          ]}
+        />
+        <View
+          style={{
+            width: 140,
+            height: 12,
+            borderRadius: 6,
+            backgroundColor: '#94a3b8',
+          }}
+        />
+      </View>
+    </View>
+  );
+}
+```
+
+### Blocked JS thread (Reanimated)
+
+Both bars show the hinge angle. The top one reads a shared value, and the
+bottom one reads React state. While the JS thread is blocked, only the
+top one keeps moving.
+
+<img src="./docs/img/blocked-js.gif" width="600" alt="Blocked JS thread example" />
+
+```tsx
+import { useEffect, useState } from 'react';
+import { Pressable, Text, View } from 'react-native';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { hinge } from 'react-native-nitro-hinge';
+import { useAnimatedHingeAngle } from 'react-native-nitro-hinge/reanimated';
+
+const track = { height: 16, borderRadius: 8, backgroundColor: '#e2e8f0' };
+const bar = { height: 16, borderRadius: 8, backgroundColor: '#2563eb' };
+
+export function BlockedJs() {
+  // Updated on the UI thread.
+  const angle = useAnimatedHingeAngle();
+  const uiBar = useAnimatedStyle(() => ({
+    width: `${((angle.value ?? 180) / 180) * 100}%`,
+  }));
+
+  // Updated through React state on the JS thread.
+  const [jsAngle, setJsAngle] = useState(hinge.hingeAngle);
+  useEffect(() => {
+    const sub = hinge.addHingeAngleListener(setJsAngle);
+    return () => sub.remove();
+  }, []);
+
+  const [blocked, setBlocked] = useState(false);
+  const blockJs = () => {
+    setBlocked(true);
+    // Let React paint the button first, then hold the JS thread for 5 s.
+    setTimeout(() => {
+      const end = Date.now() + 5000;
+      while (Date.now() < end) {
+        // busy wait
+      }
+      setBlocked(false);
+    }, 50);
+  };
+
+  return (
+    <View style={{ flex: 1, justifyContent: 'center', padding: 32, gap: 12 }}>
+      <Text style={{ fontSize: 17, fontWeight: '600' }}>UI thread</Text>
+      <View style={track}>
+        <Animated.View style={[bar, uiBar]} />
+      </View>
+
+      <Text style={{ fontSize: 17, fontWeight: '600', marginTop: 16 }}>
+        JS thread
+      </Text>
+      <View style={track}>
+        <View style={[bar, { width: `${((jsAngle ?? 180) / 180) * 100}%` }]} />
+      </View>
+
+      <Pressable
+        testID="block-js"
+        onPress={blockJs}
+        style={{
+          marginTop: 32,
+          padding: 14,
+          borderRadius: 8,
+          backgroundColor: blocked ? '#dc2626' : '#0f172a',
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 17, textAlign: 'center' }}>
+          {blocked ? 'JS thread blocked' : 'Block the JS thread for 5 s'}
+        </Text>
+      </Pressable>
+    </View>
+  );
 }
 ```
 
@@ -89,18 +319,37 @@ hinge.widthClass; // 'compact' | 'medium' | 'expanded'
 hinge.heightClass; // 'compact' | 'medium' | 'expanded'
 hinge.windowWidth; // measured window width (pt / dp)
 hinge.windowHeight; // measured window height
-hinge.safeInsets; // { top, right, bottom, left } — asymmetric-aware
-hinge.foldFeatures; // array of active folds; empty on non-foldables
-hinge.hingeAngle; // continuous angle for animations only (nullable)
+hinge.safeInsets; // { top, right, bottom, left }, often asymmetric on foldables
+hinge.foldFeatures; // active folds; empty on non-foldables
+hinge.hingeAngle; // degrees, or undefined without a hinge sensor
 hinge.fontScale; // OS Dynamic Type / Configuration.fontScale
-hinge.deviceInfo; // { platformVersion, model, hasHardwareHinge } — analytics only
+hinge.deviceInfo; // { platformVersion, model, hasHardwareHinge }, analytics only
 ```
+
+Each `foldFeatures` entry has `bounds` (window coordinates),
+`orientation` (`'vertical' | 'horizontal'`), `state`
+(`'flat' | 'halfOpened'`), `occlusionType` and `isSeparating`.
 
 On Android, `safeInsets` is the part of the system bars and display cutout
 that overlaps your app's content. With edge-to-edge (forced on Android 15+
 for apps targeting SDK 35 or higher) that's the full bar size. When the
 content is laid out inside the bars, as on older versions without
 edge-to-edge, every inset is 0.
+
+### useHinge
+
+```typescript
+const state = useHinge(); // re-renders on any state change
+const widthClass = useHinge((s) => s.widthClass); // only when widthClass changes
+const size = useHinge(
+  (s) => ({ width: s.windowWidth, height: s.windowHeight }),
+  shallowEqual // needed when the selector builds a new object
+);
+```
+
+All callers share one native listener. Fields that didn't change keep
+their reference, so `useHinge((s) => s.foldFeatures)` doesn't re-render
+when only other fields change.
 
 ### Hinge angle
 
@@ -122,106 +371,51 @@ On devices without either, `hinge.hingeAngle` is undefined.
 
 ### Reanimated
 
-Tested with `react-native-reanimated` 4.7 and `react-native-worklets` 0.13.
-Import the hooks from the subpath:
-
-```tsx
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+```typescript
 import {
-  useAnimatedHinge,
-  useAnimatedHingeAngle,
+  useAnimatedHinge, // SharedValue<HingeState>
+  useAnimatedHingeAngle, // SharedValue<number | undefined>
+  addHingeWorkletListener,
+  addHingeAngleWorkletListener,
 } from 'react-native-nitro-hinge/reanimated';
-
-function Lid() {
-  const angle = useAnimatedHingeAngle();
-  const state = useAnimatedHinge();
-  const style = useAnimatedStyle(() => ({
-    width: state.value.windowWidth / 4,
-    transform: [{ rotate: `${180 - (angle.value ?? 180)}deg` }],
-  }));
-  return <Animated.View style={[{ height: 6 }, style]} />;
-}
 ```
 
-Both hooks return shared values that the UI thread updates as soon as
-native reports a change. They never wait for the JS thread, so animations
-keep up with the hinge while JS is busy. `useAnimatedHinge()` holds the full
-`HingeState`. `useAnimatedHingeAngle()` holds the angle in degrees, or
-`undefined` without a hinge.
+The UI thread updates both shared values as soon as native reports a
+change, without waiting for the JS thread. The two listeners take a
+worklet, run it once with the current value and then on every change, and
+return a subscription with `remove()`. Tested with Reanimated 4.7 and
+worklets 0.13.
 
-For your own worklets, `addHingeWorkletListener(worklet)` and
-`addHingeAngleWorkletListener(worklet)` run on the UI thread as well. Each
-runs the worklet once with the current value right after subscribing. Call
-`remove()` on the result to stop.
-
-The main entry doesn't import Reanimated, so apps that don't use it don't
-have to install it.
-
-### Scaling helpers
+### Helpers
 
 ```typescript
-font(16); // size-class-based bump, respects Dynamic Type
-space(16); // scales more aggressively for tablets
-size(48); // sub-linear scaling for containers
-radius(8); // sub-linear for corners
+isCompactWidth(); // phone-shaped layout
+isWide(); // tablet-shaped layout (medium or expanded)
+hasActiveFold(); // any active fold in the current window
+isSeparating(); // any active fold splits content into panes
+isTriFold(); // 2+ active folds at once
+isBookPosture(); // half open, vertical fold
+isTabletopPosture(); // half open, horizontal fold
+contentWidth(); // width inside the safe area
+contentHeight(); // height inside the safe area
+
+font(16); // size-class bump, respects Dynamic Type
+space(16); // scales more for tablets
+size(48); // sub-linear, for containers
+radius(8); // sub-linear, for corners
 icon(24); // same as size
-hairline(1); // PixelRatio-aware, always 1px
+hairline(1); // PixelRatio-aware
 responsive({ compact: 1, medium: 2, expanded: 3 });
 ```
 
-### Layout queries
+## What it doesn't expose
 
-```typescript
-isCompactWidth(); // phone-shape layout
-isWide(); // tablet-shape layout (medium or expanded)
-hasActiveFold(); // any active fold in current window
-isSeparating(); // any active fold separates content into panes
-isTriFold(); // 2+ simultaneous active folds (Samsung TriFold, future Apple)
-isBookPosture(); // half-open + vertical fold (two-page layout)
-isTabletopPosture(); // half-open + horizontal fold (video-above / controls-below)
-contentWidth(); // width inside safe area, asymmetric-safe
-contentHeight(); // height inside safe area
-```
-
-### Reactive hook
-
-```typescript
-const state = useHinge(); // re-renders on any state change
-const widthClass = useHinge((s) => s.widthClass); // only when widthClass changes
-const size = useHinge(
-  (s) => ({ width: s.windowWidth, height: s.windowHeight }),
-  shallowEqual // needed when the selector builds a new object
-);
-```
-
-All callers share one native listener. Fields that didn't change keep
-their reference, so `useHinge((s) => s.foldFeatures)` doesn't re-render
-when only other fields change.
-
-## What it does NOT expose (and why)
-
-Missing on purpose. These are **anti-patterns** on at least one
-platform:
-
-- ❌ `isIPad()` / `Platform.isPad` for layout — `Platform.isPad`
-  works and correctly reports iPad, but it's a coarse device check.
-  On iPhone Duo the inner display is regular width _on a phone_:
-  `isPad` returns false but the layout should be tablet-like.
-  Same in reverse on iPad Split View at compact widths. Use
-  `widthClass === 'expanded'` or `isWide()` — ask the window,
-  not the device.
-- ❌ `isDuo()` / `isFold()` — model checks are fragile across
-  vendors, wrong on outer displays where the device is still a
-  fold but the app should look like a phone. Use `hasActiveFold()`
-  or `foldFeatures.length > 0`.
-- ❌ `pose` enum for layout — Apple's guidance is explicit: use
-  size class for layout, hinge state for content-arrangement
-  decisions like tabletop/book. `foldFeatures[i].state` is
-  exposed for this; general layout branching should key off
-  `widthClass`.
-- ❌ Aspect-ratio font scaling — the classic `(height/width) *
-multiplier` hack. Broken on every rotation, every fold, every
-  split view. Use Dynamic Type + a small size-class bump instead.
+- No `isIPad()`. The iPhone Duo is a phone, but its inner display needs a
+  tablet layout. Ask the window with `isWide()`, not the device.
+- No `isFold()` or `isDuo()`. On the outer display the device is still a
+  fold, but the app should look like a phone. Use `hasActiveFold()`.
+- No pose enum for layout. Lay out by size class and use
+  `foldFeatures[i].state` only for book and tabletop arrangements.
 
 ## More
 
