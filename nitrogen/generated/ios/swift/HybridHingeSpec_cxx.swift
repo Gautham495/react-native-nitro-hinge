@@ -215,6 +215,29 @@ open class HybridHingeSpec_cxx {
   }
   
   @inline(__always)
+  public final func addHingeAngleListener(callback: bridge.Func_void_std__optional_double_) -> bridge.Result_ChangeSubscription_ {
+    do {
+      let __result = try self.__implementation.addHingeAngleListener(callback: { () -> (Double?) -> Void in
+        let __wrappedFunction = bridge.wrap_Func_void_std__optional_double_(callback)
+        return { (__angle: Double?) -> Void in
+          __wrappedFunction.call({ () -> bridge.std__optional_double_ in
+            if let __unwrappedValue = __angle {
+              return bridge.create_std__optional_double_(__unwrappedValue)
+            } else {
+              return .init()
+            }
+          }())
+        }
+      }())
+      let __resultCpp = __result
+      return bridge.create_Result_ChangeSubscription_(__resultCpp)
+    } catch (let __error) {
+      let __exceptionPtr = __error.toCpp()
+      return bridge.create_Result_ChangeSubscription_(__exceptionPtr)
+    }
+  }
+  
+  @inline(__always)
   public final func getState() -> bridge.Result_HingeState_ {
     do {
       let __result = try self.__implementation.getState()

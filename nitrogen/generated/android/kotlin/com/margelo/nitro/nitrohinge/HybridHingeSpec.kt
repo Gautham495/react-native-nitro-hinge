@@ -72,6 +72,15 @@ abstract class HybridHingeSpec: HybridObject() {
     return __result
   }
   
+  abstract fun addHingeAngleListener(callback: (angle: Double?) -> Unit): ChangeSubscription
+  
+  @DoNotStrip
+  @Keep
+  private fun addHingeAngleListener_cxx(callback: Func_void_std__optional_double_): ChangeSubscription {
+    val __result = addHingeAngleListener(callback)
+    return __result
+  }
+  
   @DoNotStrip
   @Keep
   abstract fun getState(): HingeState
