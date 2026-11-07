@@ -19,7 +19,6 @@ class HingeStateProbeTest {
     insets = insets,
     metrics = WindowFoldSource.Metrics(widthPx, heightPx, density),
     fontScale = fontScale,
-    hingeAngle = null,
   )
 
   private fun fold(

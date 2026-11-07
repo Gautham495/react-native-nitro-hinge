@@ -19,6 +19,7 @@ final class HybridHinge: HybridHingeSpec {
   private var cachedState: HingeState
   private var cachedDeviceInfo: DeviceInfo
   private var listeners: [UUID: (HingeState) -> Void] = [:]
+  private var angleListeners: [UUID: (Double?) -> Void] = [:]
 
   // MARK: - Init
 
@@ -150,7 +151,23 @@ final class HybridHinge: HybridHingeSpec {
     })
   }
 
-  // MARK: - Observer callback
+  func addHingeAngleListener(
+    callback: @escaping (Double?) -> Void
+  ) throws -> ChangeSubscription {
+    let id = UUID()
+    stateLock.lock()
+    angleListeners[id] = callback
+    stateLock.unlock()
+
+    return ChangeSubscription(remove: { [weak self] in
+      guard let self = self else { return }
+      self.stateLock.lock()
+      self.angleListeners.removeValue(forKey: id)
+      self.stateLock.unlock()
+    })
+  }
+
+  // MARK: - Observer callbacks
 
   /// Called by HingeObserver when UIKit reports layout changes.
   /// Refreshes the cache and notifies listeners.
@@ -169,6 +186,17 @@ final class HybridHinge: HybridHingeSpec {
 
     for cb in snapshot {
       cb(newState)
+    }
+  }
+
+  /// Called by HingeObserver when the hinge angle changes.
+  func hingeAngleChanged(_ degrees: Double?) {
+    stateLock.lock()
+    let snapshot = Array(angleListeners.values)
+    stateLock.unlock()
+
+    for cb in snapshot {
+      cb(degrees)
     }
   }
 }

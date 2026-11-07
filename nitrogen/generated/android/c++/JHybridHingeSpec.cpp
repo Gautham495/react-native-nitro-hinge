@@ -59,6 +59,7 @@ namespace margelo::nitro::nitrohinge { struct HingeState; }
 #include "HingeState.hpp"
 #include "JHingeState.hpp"
 #include "JFunc_void_HingeState.hpp"
+#include "JFunc_void_std__optional_double_.hpp"
 
 namespace margelo::nitro::nitrohinge {
 
@@ -149,6 +150,11 @@ namespace margelo::nitro::nitrohinge {
   ChangeSubscription JHybridHingeSpec::addChangeListener(const std::function<void(const HingeState& /* state */)>& callback) {
     static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JChangeSubscription>(jni::alias_ref<JFunc_void_HingeState::javaobject> /* callback */)>("addChangeListener_cxx");
     auto __result = method(_javaPart, JFunc_void_HingeState_cxx::fromCpp(callback));
+    return __result->toCpp();
+  }
+  ChangeSubscription JHybridHingeSpec::addHingeAngleListener(const std::function<void(std::optional<double> /* angle */)>& callback) {
+    static const auto method = _javaPart->javaClassStatic()->getMethod<jni::local_ref<JChangeSubscription>(jni::alias_ref<JFunc_void_std__optional_double_::javaobject> /* callback */)>("addHingeAngleListener_cxx");
+    auto __result = method(_javaPart, JFunc_void_std__optional_double__cxx::fromCpp(callback));
     return __result->toCpp();
   }
   HingeState JHybridHingeSpec::getState() {

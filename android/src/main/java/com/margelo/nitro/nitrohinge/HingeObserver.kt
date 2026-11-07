@@ -44,11 +44,11 @@ object HingeObserver : WindowFoldSource.Listener, LifecycleEventListener {
   }
 
   override fun onFoldSourceChanged(state: WindowFoldSource.State) {
-    val it = instances.iterator()
-    while (it.hasNext()) {
-      val hinge = it.next().get()
-      if (hinge == null) it.remove() else hinge.onSourceChanged(state)
-    }
+    forEachInstance { it.onSourceChanged(state) }
+  }
+
+  override fun onHingeAngleChanged(degrees: Double) {
+    forEachInstance { it.onHingeAngleChanged(degrees) }
   }
 
   // RN sets currentActivity right before it calls onHostResume, so this is
@@ -71,21 +71,34 @@ object HingeObserver : WindowFoldSource.Listener, LifecycleEventListener {
       ctx.addLifecycleEventListener(this)
     }
     bind(ctx.currentActivity)
-    source?.let { hinge.onSourceChanged(it.state) }
+    source?.let {
+      hinge.onSourceChanged(it.state)
+      hinge.onHingeAngleChanged(it.hingeAngle)
+    }
   }
 
   private fun bind(activity: Activity?) {
     if (activity == null || activity === source?.activity) return
     releaseSource()
-    val next = WindowFoldSource.acquire(activity, this, wantsHingeAngle = false)
+    // Keep the angle sensor on so hingeAngle is always current.
+    val next = WindowFoldSource.acquire(activity, this, wantsHingeAngle = true)
     source = next
     onFoldSourceChanged(next.state)
+    next.hingeAngle?.let(::onHingeAngleChanged)
   }
 
   private fun stop() {
     releaseSource()
     reactContext?.removeLifecycleEventListener(this)
     reactContext = null
+  }
+
+  private inline fun forEachInstance(action: (HybridHinge) -> Unit) {
+    val it = instances.iterator()
+    while (it.hasNext()) {
+      val hinge = it.next().get()
+      if (hinge == null) it.remove() else action(hinge)
+    }
   }
 
   private fun releaseSource() {
