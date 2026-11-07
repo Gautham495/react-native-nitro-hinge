@@ -45,8 +45,8 @@ const staticStyles = StyleSheet.create({
 // -----------------------------------------------------------------
 // Pattern 2: Factory styles that reflow on pose change
 // The recommended pattern for screens that render on foldables or
-// iPad. useMemo keeps the StyleSheet.create call cheap by only
-// re-running when the width class actually changes.
+// iPad. useMemo rebuilds the sheet only when a field it reads
+// changes.
 // -----------------------------------------------------------------
 
 const makeAdaptiveStyles = () =>
@@ -87,9 +87,13 @@ export default function App() {
   // `hinge` global would still work but wouldn't trigger renders.
   const state = useHinge();
 
-  // Rebuild the StyleSheet only when the width class flips.
-  // Rebuilding on every state change would work but is wasteful.
-  const styles = useMemo(makeAdaptiveStyles, [state.widthClass]);
+  // isWide(), font() and radius() read widthClass, and space() reads
+  // windowWidth. With widthClass alone, a phone that rotates without
+  // changing class keeps the old spacing.
+  const styles = useMemo(makeAdaptiveStyles, [
+    state.widthClass,
+    state.windowWidth,
+  ]);
 
   // Column count changes by breakpoint.
   const columns = responsive({ compact: 1, medium: 2, expanded: 3 }) ?? 1;
