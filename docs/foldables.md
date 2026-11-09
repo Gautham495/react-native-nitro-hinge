@@ -164,8 +164,8 @@ premium/enterprise/creator markets already has foldable users.
 | **iPadOS**          | ✅      | ✅               | n/a            | Split View, Stage Manager, Slide Over all reflow correctly.                                                          |
 | **Android API 24+** | ✅      | ✅               | ✅             | Full `WindowInfoTracker` + `FoldingFeature` via `WindowFoldSource`. Verified on Pixel 10 Pro Fold API 37.2 emulator. |
 
-If you're shipping for iPhone Duo October 23 or any Android
-foldable, Hinge is ready today. Emulator coverage is complete on
+If you're shipping for the iPhone Duo or any Android foldable,
+Hinge is ready today. Emulator coverage is complete on
 both platforms. Physical device certification lands in v2.3.
 
 ## Verified on iPhone Duo (Xcode 27.1 beta)
@@ -260,7 +260,7 @@ Vs. other RN foldable libraries:
 | `marcooli/react-native-foldable`         | iOS + Android   | ❌ (Fabric) | Partial | ❌       | ❌         | 0.1.0-alpha, not published |
 | `react-native-fold-kit`                  | iOS + Android   | ❌ (Fabric) | ✅      | ❌       | Partial    | 0.x, active                |
 | `react-native-hinges` (appandflow)       | iOS + Android   | ❌ (Fabric) | ✅      | ❌       | ❌         | 0.1.0-alpha                |
-| **`react-native-nitro-hinge`**           | iOS + Android   | ✅          | ✅      | ✅       | ✅         | **v2.0.0**                 |
+| **`react-native-nitro-hinge`**           | iOS + Android   | ✅          | ✅      | ✅       | ✅         | **v2.1.0**                 |
 
 ## Position vs. styling engines
 
@@ -278,11 +278,12 @@ what styling engines do.
 
 ## Roadmap
 
-- **v2.0.0** (current) — iOS complete across all six Duo poses,
-  Android complete across all Pixel Fold poses via `WindowFoldSource`
-  - `WindowInfoTracker`.
-- **v2.1** — Continuous hinge-angle sensor via `TYPE_HINGE_ANGLE`
-  on Android and the iOS continuous angle API.
+- **v2.0.0** — iOS complete across all six Duo poses, Android
+  complete across all Pixel Fold poses via `WindowFoldSource` and
+  `WindowInfoTracker`.
+- **v2.1.0** (current) — `addHingeAngleListener`, fed by the hinge
+  angle sensor on Android and `UIHingeInteraction` on iOS 27.1, and
+  the Reanimated hooks in `react-native-nitro-hinge/reanimated`.
 - **v2.2** — Expo config plugin for zero-config integration.
 - **v2.3** — Physical device certification across Samsung Fold,
   Pixel Fold, Honor Magic V, and iPhone Duo when the GM lands.
