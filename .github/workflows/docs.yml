@@ -1,0 +1,75 @@
+name: Docs
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/workflows/docs.yml
+      - apps/docs/**
+      - apps/example/src/examples/**
+      - docs/**
+      - guide.png
+      - packages/react-native-nitro-hinge/package.json
+      - pnpm-lock.yaml
+      - skills/**
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/docs.yml
+      - apps/docs/**
+      - apps/example/src/examples/**
+      - docs/**
+      - guide.png
+      - packages/react-native-nitro-hinge/package.json
+      - pnpm-lock.yaml
+      - skills/**
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Setup
+        uses: ./.github/actions/setup
+
+      # Fails when a page in docs/examples falls behind apps/example.
+      - name: Build docs
+        run: pnpm site build
+
+      - name: Upload site
+        if: github.event_name != 'pull_request' && github.repository == 'Gautham495/react-native-nitro-hinge'
+        uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with:
+          path: apps/docs/build
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.repository == 'Gautham495/react-native-nitro-hinge'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
