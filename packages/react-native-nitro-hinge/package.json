@@ -130,7 +130,7 @@
       "customExportConditions": [
         "require",
         "react-native",
-        "<%- project.sourceCondition -%>"
+        "react-native-nitro-hinge-source"
       ]
     },
     "modulePathIgnorePatterns": [
@@ -144,7 +144,6 @@
       "eslint",
       "jest",
       "lefthook",
-      "release-it",
       "vite"
     ],
     "version": "0.63.1"
