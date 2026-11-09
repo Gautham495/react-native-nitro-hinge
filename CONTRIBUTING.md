@@ -126,7 +126,7 @@ The `package.json` file contains various scripts for common tasks:
 - `pnpm example start`: start the Metro server for the example app.
 - `pnpm example android`: run the example app on Android.
 - `pnpm example ios`: run the example app on iOS.
-- `pnpm site start`: run the docs site locally.
+- `pnpm dev:website`: run the docs site locally.
 - `pnpm site build`: build the docs site, `llms.txt` and the Markdown copy of each page.
 - `pnpm changeset`: add a changeset that describes your change for the next release.
 - `pnpm test:android`: run the Android unit tests (JUnit) through the example app's Gradle project.

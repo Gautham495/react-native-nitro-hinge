@@ -3,7 +3,7 @@
 ## Commands
 
 - Run `pnpm typecheck`, `pnpm lint` and `pnpm test` yourself before pushing. CI only builds the library, the example app and the docs site, and runs none of them.
-- `pnpm site start` serves the site in `apps/docs`, and `pnpm site build` builds it. `pnpm typecheck` also type-checks it.
+- `pnpm dev:website` serves the site in `apps/docs`, and `pnpm site build` builds it. `pnpm typecheck` also type-checks it.
 - Install pods with `cd apps/example && bundle exec pod install --project-directory=ios`. A global `pod` can be a different CocoaPods version from the one the Gemfile resolves (1.15.2), and then it rewrites `Podfile.lock` and `project.pbxproj`.
 
 ## Dependencies

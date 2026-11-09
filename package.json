@@ -4,6 +4,7 @@
   "scripts": {
     "example": "pnpm --filter react-native-nitro-hinge-example",
     "site": "pnpm --filter react-native-nitro-hinge-docs",
+    "dev:website": "pnpm site start",
     "clean": "del-cli packages/react-native-nitro-hinge/android/build packages/react-native-nitro-hinge/lib apps/example/android/build apps/example/android/app/build apps/example/ios/build",
     "nitrogen": "pnpm --filter react-native-nitro-hinge nitrogen",
     "typecheck": "tsc && pnpm site typecheck",
