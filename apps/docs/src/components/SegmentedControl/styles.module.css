@@ -1,0 +1,40 @@
+.group {
+  display: inline-flex;
+  gap: 4px;
+  padding: 4px;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 9999px;
+}
+
+.option {
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 9999px;
+  background: transparent;
+  color: var(--ifm-color-emphasis-700);
+  font-family: var(--ifm-font-family-monospace);
+  font-size: 0.875rem;
+  line-height: 1.25rem;
+  cursor: pointer;
+  transition:
+    background-color 300ms cubic-bezier(0.32, 0.72, 0, 1),
+    color 300ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.option:hover {
+  color: var(--ifm-font-color-base);
+}
+
+.option:active {
+  transform: scale(0.98);
+}
+
+.option:focus-visible {
+  outline: 2px solid var(--ifm-color-primary);
+  outline-offset: 2px;
+}
+
+.option[aria-pressed='true'] {
+  background: var(--ifm-color-emphasis-200);
+  color: var(--ifm-font-color-base);
+}

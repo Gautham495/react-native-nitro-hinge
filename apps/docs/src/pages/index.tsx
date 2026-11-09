@@ -2,13 +2,26 @@ import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import listDetailGif from '@site/../../docs/img/list-detail.gif';
 import postureGif from '@site/../../docs/img/posture.gif';
+import CopyCommand from '@site/src/components/CopyCommand';
+import SegmentedControl from '@site/src/components/SegmentedControl';
 import CodeBlock from '@theme/CodeBlock';
 import Layout from '@theme/Layout';
+import { useState } from 'react';
 import styles from './index.module.css';
 
 const site = 'https://gautham495.github.io/react-native-nitro-hinge/';
 
-const install = 'yarn add react-native-nitro-hinge react-native-nitro-modules';
+const packages = 'react-native-nitro-hinge react-native-nitro-modules';
+
+const installCommands = {
+  npm: `npm install ${packages}`,
+  yarn: `yarn add ${packages}`,
+  pnpm: `pnpm add ${packages}`,
+};
+
+type PackageManager = keyof typeof installCommands;
+
+const packageManagers = Object.keys(installCommands) as PackageManager[];
 
 const sizeClassExample = `import { useHinge } from 'react-native-nitro-hinge';
 
@@ -47,6 +60,22 @@ const features = [
   },
 ];
 
+function InstallCommand() {
+  const [manager, setManager] = useState<PackageManager>('npm');
+
+  return (
+    <div className={styles.installCard}>
+      <SegmentedControl
+        label="Package manager"
+        options={packageManagers}
+        value={manager}
+        onChange={setManager}
+      />
+      <CopyCommand command={installCommands[manager]} />
+    </div>
+  );
+}
+
 function Hero() {
   const { siteConfig } = useDocusaurusContext();
 
@@ -61,10 +90,7 @@ function Hero() {
         Native. One API for phones, tablets, Android foldables, tri-folds and
         the iPhone Duo.
       </p>
-      <pre className={styles.install}>
-        <span aria-hidden="true">$ </span>
-        <code>{install}</code>
-      </pre>
+      <InstallCommand />
       <div className={styles.actions}>
         <Link className="button button--primary button--lg" to="/intro/">
           Get started
@@ -155,10 +181,9 @@ function Agents() {
           don't invent functions. Every page here is also served as Markdown and
           listed in llms.txt.
         </p>
-        <pre className={styles.install}>
-          <span aria-hidden="true">$ </span>
-          <code>npx skills add Gautham495/react-native-nitro-hinge</code>
-        </pre>
+        <div className={styles.agentsCommand}>
+          <CopyCommand command="npx skills add Gautham495/react-native-nitro-hinge" />
+        </div>
         <div className={styles.actions}>
           <Link className="button button--secondary" to="/ai-agents/">
             AI agents guide
