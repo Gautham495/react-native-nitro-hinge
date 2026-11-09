@@ -32,32 +32,22 @@ jobs:
           # if you ever want it to. GITHUB_TOKEN pushes deliberately do not.
           token: ${{ secrets.GH_TOKEN }}
 
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v6
+
       - name: Set up Node.js
         uses: actions/setup-node@v7
         with:
           node-version: "22"
           registry-url: "https://registry.npmjs.org"
 
-      - name: Enable Corepack + Yarn
-        run: |
-          corepack enable
-          corepack prepare yarn@stable --activate
-
-      - name: Configure Yarn for CI
-        run: |
-          if [ -f .yarnrc.yml ]; then mv .yarnrc.yml .yarnrc.yml.backup; fi
-          cat > .yarnrc.yml << 'EOF'
-          nodeLinker: node-modules
-          enableGlobalCache: false
-          EOF
-
       - name: Install dependencies
-        run: yarn install --no-immutable
+        run: pnpm install --frozen-lockfile
 
       # ---- Build ------------------------------------------------------------
 
       - name: Build package
-        run: yarn workspace react-native-nitro-hinge prepare
+        run: pnpm --filter react-native-nitro-hinge run prepare
 
       - name: Verify dist
         working-directory: packages/react-native-nitro-hinge

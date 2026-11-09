@@ -2,14 +2,14 @@
   "name": "react-native-nitro-hinge-monorepo",
   "private": true,
   "scripts": {
-    "example": "yarn workspace react-native-nitro-hinge-example",
+    "example": "pnpm --filter react-native-nitro-hinge-example",
     "clean": "del-cli packages/react-native-nitro-hinge/android/build packages/react-native-nitro-hinge/lib apps/example/android/build apps/example/android/app/build apps/example/ios/build",
-    "nitrogen": "yarn workspace react-native-nitro-hinge nitrogen",
+    "nitrogen": "pnpm --filter react-native-nitro-hinge nitrogen",
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
-    "test": "yarn workspace react-native-nitro-hinge test",
+    "test": "pnpm --filter react-native-nitro-hinge test",
     "test:android": "cd apps/example/android && ./gradlew :react-native-nitro-hinge:testDebugUnitTest",
-    "release": "yarn workspace react-native-nitro-hinge release"
+    "release": "pnpm --filter react-native-nitro-hinge release"
   },
   "devDependencies": {
     "@commitlint/config-conventional": "^21.2.0",
@@ -28,11 +28,7 @@
     "turbo": "^2.10.8",
     "typescript": "^6.0.3"
   },
-  "workspaces": [
-    "packages/*",
-    "apps/*"
-  ],
-  "packageManager": "yarn@4.11.0",
+  "packageManager": "pnpm@12.18.0",
   "prettier": {
     "quoteProps": "consistent",
     "singleQuote": true,

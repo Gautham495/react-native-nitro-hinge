@@ -13,6 +13,8 @@ const root = path.resolve(__dirname, '../..');
 const config = withMetroConfig(getDefaultConfig(__dirname), {
   root,
   dirname: __dirname,
+  // Same list as pnpm-workspace.yaml.
+  workspaces: ['packages/*', 'apps/*'],
   conditions: ['react-native-nitro-hinge-source'],
 });
 

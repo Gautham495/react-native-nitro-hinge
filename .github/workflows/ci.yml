@@ -36,7 +36,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Build package
-        run: yarn workspace react-native-nitro-hinge prepare
+        run: pnpm --filter react-native-nitro-hinge run prepare
 
   build-android:
     runs-on: ubuntu-latest
@@ -55,13 +55,13 @@ jobs:
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ${{ env.TURBO_CACHE_DIR }}
-          key: ${{ runner.os }}-turborepo-android-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-turborepo-android-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turborepo-android-
 
       - name: Check turborepo cache for Android
         run: |
-          TURBO_CACHE_STATUS=$(node -p "($(yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:android').cache.status")
+          TURBO_CACHE_STATUS=$(node -p "($(pnpm exec turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:android').cache.status")
 
           if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
             echo "turbo_cache_hit=1" >> $GITHUB_ENV
@@ -94,7 +94,7 @@ jobs:
         env:
           JAVA_OPTS: "-XX:MaxHeapSize=6g"
         run: |
-          yarn turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
+          pnpm exec turbo run build:android --cache-dir="${{ env.TURBO_CACHE_DIR }}"
 
   build-ios:
     runs-on: macos-latest
@@ -115,13 +115,13 @@ jobs:
         uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         with:
           path: ${{ env.TURBO_CACHE_DIR }}
-          key: ${{ runner.os }}-turborepo-ios-${{ hashFiles('yarn.lock') }}
+          key: ${{ runner.os }}-turborepo-ios-${{ hashFiles('pnpm-lock.yaml') }}
           restore-keys: |
             ${{ runner.os }}-turborepo-ios-
 
       - name: Check turborepo cache for iOS
         run: |
-          TURBO_CACHE_STATUS=$(node -p "($(yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:ios').cache.status")
+          TURBO_CACHE_STATUS=$(node -p "($(pnpm exec turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}" --dry=json)).tasks.find(t => t.task === 'build:ios').cache.status")
 
           if [[ $TURBO_CACHE_STATUS == "HIT" ]]; then
             echo "turbo_cache_hit=1" >> $GITHUB_ENV
@@ -137,4 +137,4 @@ jobs:
 
       - name: Build example for iOS
         run: |
-          yarn turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}"
+          pnpm exec turbo run build:ios --cache-dir="${{ env.TURBO_CACHE_DIR }}"
