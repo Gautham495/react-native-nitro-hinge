@@ -139,6 +139,14 @@ namespace margelo::nitro::nitrohinge {
       auto __value = std::move(__result.value());
       return __value;
     }
+    inline ChangeSubscription addHingeAngleListener(const std::function<void(std::optional<double> /* angle */)>& callback) override {
+      auto __result = _swiftPart.addHingeAngleListener(callback);
+      if (__result.hasError()) [[unlikely]] {
+        std::rethrow_exception(__result.error());
+      }
+      auto __value = std::move(__result.value());
+      return __value;
+    }
     inline HingeState getState() override {
       auto __result = _swiftPart.getState();
       if (__result.hasError()) [[unlikely]] {

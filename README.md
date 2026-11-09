@@ -334,6 +334,24 @@ for apps targeting SDK 35 or higher) that's the full bar size. When the
 content is laid out inside the bars, as on older versions without
 edge-to-edge, every inset is 0.
 
+### Hinge angle
+
+```typescript
+const sub = hinge.addHingeAngleListener((angle) => {
+  // degrees, or undefined when the window has no hinge
+});
+sub.remove();
+```
+
+Use the angle for animations only. Layout should follow
+`foldFeatures[i].state`. The listener can fire every frame while the
+hinge moves, so drive an animated value with it rather than React state.
+`addChangeListener` and `useHinge` don't fire for angle changes.
+
+On Android the angle comes from the hinge angle sensor (Android 11+), and
+on iOS from `UIHingeInteraction` (iOS 27.1+, with `HINGE_IOS_27_1_SDK`).
+On devices without either, `hinge.hingeAngle` is undefined.
+
 ### Scaling helpers
 
 ```typescript

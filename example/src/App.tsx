@@ -1,8 +1,9 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { ScrollView, StyleSheet, Text, View, SafeAreaView } from 'react-native';
 
 import {
+  hinge,
   useHinge,
   font,
   space,
@@ -197,7 +198,26 @@ function StatusBlock({
         value={`${isBookPosture()} / ${isTabletopPosture()}`}
         testID="posture"
       />
+      <HingeAngleRow />
     </View>
+  );
+}
+
+function HingeAngleRow() {
+  const [angle, setAngle] = useState(hinge.hingeAngle);
+
+  // Re-renders on every angle change. That's fine for a readout.
+  useEffect(() => {
+    const sub = hinge.addHingeAngleListener(setAngle);
+    return () => sub.remove();
+  }, []);
+
+  return (
+    <Row
+      label="Hinge angle"
+      value={angle === undefined ? 'none' : `${Math.round(angle)}°`}
+      testID="hinge-angle"
+    />
   );
 }
 
