@@ -2,8 +2,12 @@
   "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
     // @docusaurus/tsconfig still sets baseUrl, which TypeScript 6 rejects.
-    // Without it, paths resolve from this file, so @site/* still works.
-    "baseUrl": null
+    // Without it, paths resolve from the file that declares them, so @site/*
+    // is declared again here.
+    "baseUrl": null,
+    "paths": {
+      "@site/*": ["./*"]
+    }
   },
   "exclude": [".docusaurus", "build"]
 }
