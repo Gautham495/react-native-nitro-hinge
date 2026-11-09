@@ -24,6 +24,16 @@ export default defineConfig([
     },
   },
   {
-    ignores: ['node_modules/', 'lib/', '**/build/'],
+    // Each workspace has its own Babel config and the root has none.
+    files: ['**/*.js'],
+    languageOptions: {
+      parserOptions: {
+        requireConfigFile: false,
+        babelOptions: { babelrc: false, configFile: false },
+      },
+    },
+  },
+  {
+    ignores: ['node_modules/', '**/lib/', '**/build/'],
   },
 ]);

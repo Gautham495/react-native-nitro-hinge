@@ -1944,7 +1944,7 @@ PODS:
 DEPENDENCIES:
   - FBLazyVector (from `../node_modules/react-native/Libraries/FBLazyVector`)
   - hermes-engine (from `../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec`)
-  - NitroHinge (from `../..`)
+  - NitroHinge (from `../../../packages/react-native-nitro-hinge`)
   - NitroModules (from `../node_modules/react-native-nitro-modules`)
   - RCTDeprecation (from `../node_modules/react-native/ReactApple/Libraries/RCTFoundation/RCTDeprecation`)
   - RCTRequired (from `../node_modules/react-native/Libraries/Required`)
@@ -2029,7 +2029,7 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/sdks/hermes-engine/hermes-engine.podspec"
     :tag: hermes-v250829098.0.16
   NitroHinge:
-    :path: "../.."
+    :path: "../../../packages/react-native-nitro-hinge"
   NitroModules:
     :path: "../node_modules/react-native-nitro-modules"
   RCTDeprecation:

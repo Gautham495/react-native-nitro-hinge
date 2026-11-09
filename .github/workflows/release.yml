@@ -57,9 +57,10 @@ jobs:
       # ---- Build ------------------------------------------------------------
 
       - name: Build package
-        run: yarn prepare
+        run: yarn workspace react-native-nitro-hinge prepare
 
       - name: Verify dist
+        working-directory: packages/react-native-nitro-hinge
         run: |
           ls -la lib/
           # Check for the outputs from react-native-builder-bob
@@ -74,6 +75,7 @@ jobs:
 
       - name: Bump patch version
         id: bump
+        working-directory: packages/react-native-nitro-hinge
         run: |
           NEW_VERSION=$(node -e "
             const fs = require('fs');
@@ -94,6 +96,7 @@ jobs:
       # in git that points at a version that was never published.
       #
       - name: Publish to npm
+        working-directory: packages/react-native-nitro-hinge
         run: npm publish --access public --provenance
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
@@ -102,7 +105,7 @@ jobs:
 
       - name: Commit, tag, and push
         run: |
-          git add package.json
+          git add packages/react-native-nitro-hinge/package.json
           git commit -m "chore: release ${{ steps.bump.outputs.tag }}"
           git tag "${{ steps.bump.outputs.tag }}"
           git push origin main

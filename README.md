@@ -46,7 +46,7 @@ The Reanimated hooks also need `react-native-reanimated` 4 and
 ## Examples
 
 The code under each GIF is the full screen from the
-[example app](./example/src/examples).
+[example app](./apps/example/src/examples).
 
 ### List / detail
 
