@@ -20,6 +20,8 @@ import {
 
 import type { FoldFeature } from 'react-native-nitro-hinge';
 
+import { AnimatedDemo } from './AnimatedDemo';
+
 // Configure once at app start. If your design mocks were drawn at
 // 375pt (older iPhone), set that here. Default is 390.
 configureHinge({ baselineWidth: 390 });
@@ -105,6 +107,8 @@ export default function App() {
         <Text style={staticStyles.title}>Hinge Demo</Text>
 
         <StatusBlock state={state} columns={columns} />
+
+        <AnimatedDemo />
 
         <View style={{ marginTop: space(24) }}>
           <Text style={staticStyles.title}>Adaptive layout</Text>

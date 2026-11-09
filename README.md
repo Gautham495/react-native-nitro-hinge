@@ -352,6 +352,43 @@ On Android the angle comes from the hinge angle sensor (Android 11+), and
 on iOS from `UIHingeInteraction` (iOS 27.1+, with `HINGE_IOS_27_1_SDK`).
 On devices without either, `hinge.hingeAngle` is undefined.
 
+### Reanimated
+
+Tested with `react-native-reanimated` 4.7 and `react-native-worklets` 0.13.
+Import the hooks from the subpath:
+
+```tsx
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import {
+  useAnimatedHinge,
+  useAnimatedHingeAngle,
+} from 'react-native-nitro-hinge/reanimated';
+
+function Lid() {
+  const angle = useAnimatedHingeAngle();
+  const state = useAnimatedHinge();
+  const style = useAnimatedStyle(() => ({
+    width: state.value.windowWidth / 4,
+    transform: [{ rotate: `${180 - (angle.value ?? 180)}deg` }],
+  }));
+  return <Animated.View style={[{ height: 6 }, style]} />;
+}
+```
+
+Both hooks return shared values that the UI thread updates as soon as
+native reports a change. They never wait for the JS thread, so animations
+keep up with the hinge while JS is busy. `useAnimatedHinge()` holds the full
+`HingeState`. `useAnimatedHingeAngle()` holds the angle in degrees, or
+`undefined` without a hinge.
+
+For your own worklets, `addHingeWorkletListener(worklet)` and
+`addHingeAngleWorkletListener(worklet)` run on the UI thread as well. Each
+runs the worklet once with the current value right after subscribing. Call
+`remove()` on the result to stop.
+
+The main entry doesn't import Reanimated, so apps that don't use it don't
+have to install it.
+
 ### Scaling helpers
 
 ```typescript
