@@ -10,3 +10,7 @@ hoistingLimits: workspaces
 
 allowBuilds:
   lefthook: true
+  # The docs site doesn't need these: @swc/core ships its binary as an
+  # optional dependency, and core-js only prints a banner.
+  '@swc/core': false
+  core-js: false
