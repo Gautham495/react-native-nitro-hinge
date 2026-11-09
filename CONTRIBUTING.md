@@ -116,7 +116,7 @@ We use [Changesets](https://changesets.dev) to version and publish the library. 
 pnpm changeset
 ```
 
-Changes to the example app, the docs or the tooling don't need one.
+Changes to the example app, the tooling or the docs under `docs/` don't need one. `README.md` and `skills/` ship in the npm package, so add a patch changeset when a change there should reach npm.
 
 When changesets reach `main`, the release workflow opens a "Version Packages" pull request that bumps the version and updates `CHANGELOG.md`. Merging it publishes the new version to npm and creates the GitHub release.
 

@@ -21,10 +21,6 @@
 - `README.md`, `LICENSE` and `skills/` live at the root, and `prepack` copies them into the package. The copies under `packages/react-native-nitro-hinge/` are gitignored, so don't edit them.
 - The README examples are pasted verbatim from `apps/example/src/examples/*.tsx`, and `skills/react-native-nitro-hinge/` repeats the API and the examples. When the API or an example changes, update all three.
 
-## Releases
-
-- `README.md` and `skills/` ship in the npm package. Like library code, they need a patch changeset (`pnpm changeset`) when the change should reach npm. Don't bump the version or edit `CHANGELOG.md`; the Version Packages PR does that.
-
 ## iOS
 
 - If a Debug build fails to link Reanimated with missing `facebook::react::DebugStringConvertible` symbols, the Pods hold the Release flavor of the prebuilt React core and `Pods/React-Core-prebuilt/.last_build_configuration` is missing. Write `Release` into that file and rebuild, and the build script switches to the Debug flavor.
