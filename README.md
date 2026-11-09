@@ -417,6 +417,21 @@ responsive({ compact: 1, medium: 2, expanded: 3 });
 - No pose enum for layout. Lay out by size class and use
   `foldFeatures[i].state` only for book and tabletop arrangements.
 
+## AI agents
+
+The repo has an [Agent Skills](https://agentskills.io) skill with the API,
+layout recipes, the Reanimated hooks and setup notes, so coding agents
+work from the real API. Add it to your app with:
+
+```bash
+npx skills add Gautham495/react-native-nitro-hinge
+```
+
+The CLI puts it in `.claude/skills` for Claude Code and `.agents/skills`
+for Codex. The skill lives in
+[skills/react-native-nitro-hinge](./skills/react-native-nitro-hinge), and
+the npm package includes it too.
+
 ## More
 
 [docs/foldables.md](./docs/foldables.md) has the devices Hinge covers,
