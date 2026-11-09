@@ -298,4 +298,4 @@ what styling engines do.
 - Samsung: [Foldable developer docs](https://developer.samsung.com/galaxy-z/foldable-experience)
 
 For device-specific metrics on every foldable in the market, see
-[`android-foldables-device-metrics.md`](../android-foldables-device-metrics.md).
+[`android-foldables-device-metrics.md`](./android-foldables-device-metrics.md).
