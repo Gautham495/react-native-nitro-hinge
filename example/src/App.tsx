@@ -1,6 +1,14 @@
 import { useEffect, useMemo, useState } from 'react';
 
-import { ScrollView, StyleSheet, Text, View, SafeAreaView } from 'react-native';
+import {
+  BackHandler,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  SafeAreaView,
+} from 'react-native';
 
 import {
   hinge,
@@ -21,6 +29,10 @@ import {
 import type { FoldFeature } from 'react-native-nitro-hinge';
 
 import { AnimatedDemo } from './AnimatedDemo';
+import { BlockedJs } from './examples/BlockedJs';
+import { Lid } from './examples/Lid';
+import { ListDetail } from './examples/ListDetail';
+import { Posture } from './examples/Posture';
 
 // Configure once at app start. If your design mocks were drawn at
 // 375pt (older iPhone), set that here. Default is 390.
@@ -81,10 +93,89 @@ const makeAdaptiveStyles = () =>
   });
 
 // -----------------------------------------------------------------
+// The README examples, each one full screen
+// -----------------------------------------------------------------
+
+const examples = [
+  { id: 'list-detail', title: 'List / detail', Screen: ListDetail },
+  { id: 'posture', title: 'Posture', Screen: Posture },
+  { id: 'lid', title: 'Lid', Screen: Lid },
+  { id: 'blocked-js', title: 'Blocked JS', Screen: BlockedJs },
+];
+
+type Example = (typeof examples)[number];
+
+export default function App() {
+  const [example, setExample] = useState<Example | null>(null);
+
+  useEffect(() => {
+    if (!example) return;
+    const sub = BackHandler.addEventListener('hardwareBackPress', () => {
+      setExample(null);
+      return true;
+    });
+    return () => sub.remove();
+  }, [example]);
+
+  if (!example) {
+    return <Demo onOpenExample={setExample} />;
+  }
+
+  return (
+    <View style={StyleSheet.absoluteFill}>
+      <example.Screen />
+      <Pressable
+        testID="close-example"
+        onPress={() => setExample(null)}
+        style={{
+          position: 'absolute',
+          right: 16,
+          bottom: hinge.safeInsets.bottom + 16,
+          paddingVertical: 8,
+          paddingHorizontal: 14,
+          borderRadius: 16,
+          backgroundColor: 'rgba(15, 23, 42, 0.6)',
+        }}
+      >
+        <Text style={{ color: 'white', fontSize: 15 }}>Close</Text>
+      </Pressable>
+    </View>
+  );
+}
+
+function ExamplePicker({ onOpen }: { onOpen: (example: Example) => void }) {
+  return (
+    <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: space(8) }}>
+      {examples.map((example) => (
+        <Pressable
+          key={example.id}
+          testID={`example-${example.id}`}
+          onPress={() => onOpen(example)}
+          style={{
+            paddingVertical: space(8),
+            paddingHorizontal: space(12),
+            borderRadius: radius(16),
+            backgroundColor: '#0f172a',
+          }}
+        >
+          <Text style={{ color: 'white', fontSize: font(14) }}>
+            {example.title}
+          </Text>
+        </Pressable>
+      ))}
+    </View>
+  );
+}
+
+// -----------------------------------------------------------------
 // The screen
 // -----------------------------------------------------------------
 
-export default function App() {
+function Demo({
+  onOpenExample,
+}: {
+  onOpenExample: (example: Example) => void;
+}) {
   // Subscribing to Hinge state re-renders on any layout change.
   // The returned object is a fresh snapshot; the getters on the
   // `hinge` global would still work but wouldn't trigger renders.
@@ -107,6 +198,10 @@ export default function App() {
         <Text style={staticStyles.title}>Hinge Demo</Text>
 
         <StatusBlock state={state} columns={columns} />
+
+        <View style={{ marginTop: space(16) }}>
+          <ExamplePicker onOpen={onOpenExample} />
+        </View>
 
         <AnimatedDemo />
 
