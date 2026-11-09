@@ -3,6 +3,7 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import listDetailGif from '@site/../../docs/img/list-detail.gif';
 import postureGif from '@site/../../docs/img/posture.gif';
 import CopyCommand from '@site/src/components/CopyCommand';
+import FoldableDemo from '@site/src/components/FoldableDemo';
 import SegmentedControl from '@site/src/components/SegmentedControl';
 import CodeBlock from '@theme/CodeBlock';
 import Layout from '@theme/Layout';
@@ -108,27 +109,30 @@ function Hero() {
 
 function Recordings() {
   return (
-    <section className={styles.recordings} aria-label="Example recordings">
-      <figure className={styles.recording}>
-        <img
-          src={listDetailGif}
-          alt="List / detail example on the iPhone Duo simulator"
-          width={600}
-          height={422}
-        />
-        <figcaption>List / detail on the iPhone Duo simulator</figcaption>
-      </figure>
-      <figure className={styles.recording}>
-        <img
-          src={postureGif}
-          alt="Posture example on an Android foldable emulator"
-          width={360}
-          height={374}
-        />
-        <figcaption>
-          Book and tabletop postures on an Android emulator
-        </figcaption>
-      </figure>
+    <section className={styles.section}>
+      <h2 className={styles.sectionTitle}>Recorded from the example app</h2>
+      <div className={styles.recordings}>
+        <figure className={styles.recording}>
+          <img
+            src={listDetailGif}
+            alt="List / detail example on the iPhone Duo simulator"
+            width={600}
+            height={422}
+          />
+          <figcaption>List / detail on the iPhone Duo simulator</figcaption>
+        </figure>
+        <figure className={styles.recording}>
+          <img
+            src={postureGif}
+            alt="Posture example on an Android foldable emulator"
+            width={360}
+            height={374}
+          />
+          <figcaption>
+            Book and tabletop postures on an Android emulator
+          </figcaption>
+        </figure>
+      </div>
     </section>
   );
 }
@@ -205,8 +209,9 @@ export default function Home() {
     >
       <main className={styles.main}>
         <Hero />
-        <Recordings />
+        <FoldableDemo />
         <Code />
+        <Recordings />
         <Features />
         <Agents />
       </main>

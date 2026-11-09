@@ -20,6 +20,7 @@
     "prism-react-renderer": "^2.4.1",
     "react": "19.2.3",
     "react-dom": "19.2.3",
+    "three": "^0.187.0",
     "unist-util-visit": "^5.2.0"
   },
   "devDependencies": {
@@ -27,6 +28,7 @@
     "@docusaurus/tsconfig": "3.10.2",
     "@docusaurus/types": "3.10.2",
     "@types/mdast": "^4.0.4",
+    "@types/three": "^0.187.0",
     "typescript": "^6.0.3"
   },
   "browserslist": {
