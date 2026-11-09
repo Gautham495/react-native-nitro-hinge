@@ -65,12 +65,6 @@ Running "NitroHingeExample" with {"fabric":true,"initialProps":{"concurrentRoot"
 
 Note the `"fabric":true` and `"concurrentRoot":true` properties.
 
-To run the example app on Web:
-
-```sh
-pnpm example web
-```
-
 Make sure your code passes TypeScript:
 
 ```sh
@@ -127,13 +121,11 @@ The `package.json` file contains various scripts for common tasks:
 
 - `pnpm install`: setup project by installing dependencies.
 - `pnpm typecheck`: type-check files with TypeScript.
-  - `pnpm lint`: lint files with [ESLint](https://eslint.org/).
-    - `pnpm test`: run unit tests with [Jest](https://jestjs.io/).
-  - `pnpm example start`: start the Metro server for the example app.
+- `pnpm lint`: lint files with [ESLint](https://eslint.org/).
+- `pnpm test`: run unit tests with [Jest](https://jestjs.io/).
+- `pnpm example start`: start the Metro server for the example app.
 - `pnpm example android`: run the example app on Android.
 - `pnpm example ios`: run the example app on iOS.
-  - `pnpm example web`: run the example app on Web.
-- `pnpm example build:web`: build the example app for Web.
 - `pnpm changeset`: add a changeset that describes your change for the next release.
 - `pnpm test:android`: run the Android unit tests (JUnit) through the example app's Gradle project.
 - `pnpm example e2e:android`: run the Maestro e2e flows on the connected Android device or emulator. The fold steps need a foldable emulator.
