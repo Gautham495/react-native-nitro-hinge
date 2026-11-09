@@ -1,0 +1,12 @@
+packages:
+  - packages/*
+  - apps/*
+
+# React Native expects each app to have a flat node_modules of its own.
+# The example's native projects read react-native and its Gradle plugin
+# from apps/example/node_modules.
+nodeLinker: hoisted
+hoistingLimits: workspaces
+
+allowBuilds:
+  lefthook: true
