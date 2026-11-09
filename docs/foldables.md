@@ -62,15 +62,7 @@ in the market:
 | Apple  | iPhone Duo                          | Book-style (2-panel)   | ✅ Full via iOS 27.1                                    |
 | Apple  | Future foldable iPad (rumored 2028) | Book-style or tri-fold | ✅ Same code path — `foldFeatures[]` scales to N hinges |
 
-<table>
-  <tr>
-    <td align="center"><strong>iOS Guide</strong></td>
-  </tr>
-  <tr>
-    <td><img src="../guide.png" alt="iOS Guide" /></td>
-  </tr>
-
-</table>
+![iOS Guide](../guide.png)
 
 ### Android — book-style (2-panel)
 
@@ -172,28 +164,11 @@ both platforms. Physical device certification lands in v2.3.
 
 Six configurations, six correct readings, zero manual work:
 
-<table>
-  <tr>
-    <td align="center"><strong>Outer portrait</strong><br/>compact<br/>1 column<br/>vertical bar right</td>
-    <td align="center"><strong>Outer landscape</strong><br/>compact<br/>1 column<br/>vertical bar left</td>
-    <td align="center"><strong>Inner flat portrait</strong><br/>medium<br/>2 columns</td>
-  </tr>
-  <tr>
-    <td><img src="./img/ios/1.png" alt="iPhone Duo outer portrait" /></td>
-    <td><img src="./img/ios/4.png" alt="iPhone Duo outer landscape" /></td>
-    <td><img src="./img/ios/6.png" alt="iPhone Duo inner flat portrait" /></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Inner flat landscape</strong><br/>expanded<br/>3 columns</td>
-    <td align="center"><strong>Inner unfolded portrait</strong><br/>medium × expanded<br/>tablet-shape</td>
-    <td align="center"><strong>Inner unfolded landscape</strong><br/>expanded<br/>widest window</td>
-  </tr>
-  <tr>
-    <td><img src="./img/ios/3.png" alt="iPhone Duo inner flat landscape" /></td>
-    <td><img src="./img/ios/5.png" alt="iPhone Duo inner unfolded portrait" /></td>
-    <td><img src="./img/ios/2.png" alt="iPhone Duo inner unfolded landscape" /></td>
-  </tr>
-</table>
+| **Outer portrait** · compact · 1 column · vertical bar right | **Outer landscape** · compact · 1 column · vertical bar left | **Inner flat portrait** · medium · 2 columns |
+| :---: | :---: | :---: |
+| ![iPhone Duo outer portrait](./img/ios/1.png) | ![iPhone Duo outer landscape](./img/ios/4.png) | ![iPhone Duo inner flat portrait](./img/ios/6.png) |
+| **Inner flat landscape** · expanded · 3 columns | **Inner unfolded portrait** · medium × expanded · tablet-shape | **Inner unfolded landscape** · expanded · widest window |
+| ![iPhone Duo inner flat landscape](./img/ios/3.png) | ![iPhone Duo inner unfolded portrait](./img/ios/5.png) | ![iPhone Duo inner unfolded landscape](./img/ios/2.png) |
 
 Every value in every screenshot is what UIKit + iOS 27.1 reserved
 regions actually report, marshalled through Nitro's synchronous JSI
@@ -205,28 +180,11 @@ polling, no bridge hops, no JS-side heuristics.
 Six configurations across a regular phone and a foldable, all four
 fold states covered, correct readings on every one:
 
-<table>
-  <tr>
-    <td align="center"><strong>Regular phone</strong><br/>closed (compact)<br/>1 column<br/>no fold reported</td>
-    <td align="center"><strong>Fold cover screen</strong><br/>closed (compact)<br/>1 column<br/>closed / no fold</td>
-    <td align="center"><strong>Book pose (half-open, portrait)</strong><br/>Half Open<br/>3 columns<br/>vertical fold, separating</td>
-  </tr>
-  <tr>
-    <td><img src="./img/android/1.png" alt="Pixel 10 regular phone" /></td>
-    <td><img src="./img/android/2.png" alt="Pixel Fold cover screen" /></td>
-    <td><img src="./img/android/3.png" alt="Pixel Fold book pose" /></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>Tabletop (half-open, landscape)</strong><br/>Half Open<br/>3 columns<br/>horizontal fold</td>
-    <td align="center"><strong>Flat landscape</strong><br/>open (expanded)<br/>3 columns<br/>horizontal fold, flat</td>
-    <td align="center"><strong>Flat portrait</strong><br/>open (expanded)<br/>3 columns<br/>vertical fold, flat</td>
-  </tr>
-  <tr>
-    <td><img src="./img/android/4.png" alt="Pixel Fold tabletop" /></td>
-    <td><img src="./img/android/5.png" alt="Pixel Fold flat landscape" /></td>
-    <td><img src="./img/android/6.png" alt="Pixel Fold flat portrait" /></td>
-  </tr>
-</table>
+| **Regular phone** · closed (compact) · 1 column · no fold reported | **Fold cover screen** · closed (compact) · 1 column · closed / no fold | **Book pose (half-open, portrait)** · Half Open · 3 columns · vertical fold, separating |
+| :---: | :---: | :---: |
+| ![Pixel 10 regular phone](./img/android/1.png) | ![Pixel Fold cover screen](./img/android/2.png) | ![Pixel Fold book pose](./img/android/3.png) |
+| **Tabletop (half-open, landscape)** · Half Open · 3 columns · horizontal fold | **Flat landscape** · open (expanded) · 3 columns · horizontal fold, flat | **Flat portrait** · open (expanded) · 3 columns · vertical fold, flat |
+| ![Pixel Fold tabletop](./img/android/4.png) | ![Pixel Fold flat landscape](./img/android/5.png) | ![Pixel Fold flat portrait](./img/android/6.png) |
 
 Every value is what Jetpack WindowManager's `WindowInfoTracker` and
 `FoldingFeature` actually report, delivered through Nitro's JSI
