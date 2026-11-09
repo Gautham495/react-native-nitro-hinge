@@ -23,14 +23,7 @@ pnpm install
 
 This project uses Nitro Modules. If you're not familiar with how Nitro works, make sure to check the [Nitro Modules Docs](https://nitro.margelo.com/).
 
-You need to run [Nitrogen](https://nitro.margelo.com/docs/nitrogen) to generate the boilerplate code required for this project. The example app will not build without this step.
-
-Run **Nitrogen** in following cases:
-
-- When you make changes to any `*.nitro.ts` files.
-- When running the project for the first time (since the generated files are not committed to the repository).
-
-To invoke **Nitrogen**, use the following command:
+[Nitrogen](https://nitro.margelo.com/docs/nitrogen) generates the native boilerplate from the `*.nitro.ts` specs, and its output in `packages/react-native-nitro-hinge/nitrogen/generated/` is committed. When you change a `*.nitro.ts` file, run it and commit what it writes:
 
 ```sh
 pnpm nitrogen
@@ -113,8 +106,6 @@ We follow the [conventional commits specification](https://www.conventionalcommi
 - `docs`: changes into documentation, e.g. add usage example for the module.
 - `test`: adding or updating tests, e.g. add integration tests using detox.
 - `chore`: tooling changes, e.g. change CI config.
-
-Our pre-commit hooks verify that your commit message matches this format when committing.
 
 
 ### Publishing to npm
