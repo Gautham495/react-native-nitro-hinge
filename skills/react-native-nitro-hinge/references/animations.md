@@ -28,8 +28,8 @@ sub.remove();
 
 ## Reanimated
 
-Install the optional peers. The package was tested with Reanimated 4.7
-and worklets 0.13.
+Install the optional peers: Reanimated 4.4 or later and worklets 0.9 or
+later. The package was tested with Reanimated 4.7 and worklets 0.13.
 
 ```bash
 yarn add react-native-reanimated react-native-worklets

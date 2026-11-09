@@ -39,8 +39,8 @@ safe insets and font scale, and `foldFeatures` stays empty.
 it either way. After switching to an older Xcode, run `pod install` again,
 or the build fails on the 27.1 APIs.
 
-The Reanimated hooks also need `react-native-reanimated` 4 and
-`react-native-worklets`. Apps that don't import
+The Reanimated hooks also need `react-native-reanimated` 4.4 or later and
+`react-native-worklets` 0.9 or later. Apps that don't import
 `react-native-nitro-hinge/reanimated` don't need either.
 
 ## Examples

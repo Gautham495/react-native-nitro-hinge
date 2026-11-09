@@ -31,7 +31,8 @@ exists from Android 11 on devices that have it.
 ## Reanimated (optional)
 
 Only for `react-native-nitro-hinge/reanimated`: install
-`react-native-reanimated` 4 and `react-native-worklets`, and add
+`react-native-reanimated` 4.4 or later and `react-native-worklets` 0.9 or
+later, and add
 `react-native-worklets/plugin` to the Babel plugins. See
 [animations.md](animations.md).
 
