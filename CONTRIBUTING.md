@@ -119,13 +119,15 @@ Our pre-commit hooks verify that your commit message matches this format when co
 
 ### Publishing to npm
 
-We use [release-it](https://github.com/release-it/release-it) to make it easier to publish new versions. It handles common tasks like bumping version based on semver, creating tags and releases etc.
-
-To publish new versions, run the following:
+We use [Changesets](https://changesets.dev) to version and publish the library. A pull request that changes the library should include a changeset, which says how much the version goes up (patch, minor or major) and what goes in the changelog:
 
 ```sh
-pnpm release
+pnpm changeset
 ```
+
+Changes to the example app, the docs or the tooling don't need one.
+
+When changesets reach `main`, the release workflow opens a "Version Packages" pull request that bumps the version and updates `CHANGELOG.md`. Merging it publishes the new version to npm and creates the GitHub release.
 
 
 ### Scripts
@@ -141,6 +143,7 @@ The `package.json` file contains various scripts for common tasks:
 - `pnpm example ios`: run the example app on iOS.
   - `pnpm example web`: run the example app on Web.
 - `pnpm example build:web`: build the example app for Web.
+- `pnpm changeset`: add a changeset that describes your change for the next release.
 - `pnpm test:android`: run the Android unit tests (JUnit) through the example app's Gradle project.
 - `pnpm example e2e:android`: run the Maestro e2e flows on the connected Android device or emulator. The fold steps need a foldable emulator.
 - `pnpm example e2e:ios`: run the Maestro e2e flows on the booted iOS simulator. Use a regular iPhone, since rotation fails on the iPhone Duo simulator.
@@ -153,6 +156,7 @@ When you're sending a pull request:
 
 - Prefer small pull requests focused on one change.
 - Verify that linters and tests are passing.
+- Add a changeset if the pull request changes the library.
 - Review the documentation to make sure it looks good.
 - Follow the pull request template when opening a pull request.
 - For pull requests that change the API or implementation, discuss with maintainers first by opening an issue.

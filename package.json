@@ -8,10 +8,11 @@
     "typecheck": "tsc",
     "lint": "eslint \"**/*.{js,ts,tsx}\"",
     "test": "pnpm --filter react-native-nitro-hinge test",
-    "test:android": "cd apps/example/android && ./gradlew :react-native-nitro-hinge:testDebugUnitTest",
-    "release": "pnpm --filter react-native-nitro-hinge release"
+    "test:android": "cd apps/example/android && ./gradlew :react-native-nitro-hinge:testDebugUnitTest"
   },
   "devDependencies": {
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
     "@commitlint/config-conventional": "^21.2.0",
     "@eslint/compat": "^2.1.0",
     "@eslint/eslintrc": "^3.3.6",
