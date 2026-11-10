@@ -3,5 +3,5 @@
   "compilerOptions": {
     "rootDir": "."
   },
-  "exclude": ["**/node_modules", "**/lib"]
+  "exclude": ["**/node_modules", "**/lib", "apps/docs"]
 }

@@ -437,7 +437,7 @@ the npm package includes it too.
 [docs/foldables.md](./docs/foldables.md) has the devices Hinge covers,
 market numbers, per-pose screenshots, the comparison with other
 libraries and the roadmap.
-[android-foldables-device-metrics.md](./android-foldables-device-metrics.md)
+[docs/android-foldables-device-metrics.md](./docs/android-foldables-device-metrics.md)
 lists measured metrics for Android foldables.
 
 ## Credits

@@ -2,7 +2,8 @@
 
 ## Commands
 
-- Run `pnpm typecheck`, `pnpm lint` and `pnpm test` yourself before pushing. CI only builds the library and the example app and runs none of them.
+- Run `pnpm typecheck`, `pnpm lint` and `pnpm test` yourself before pushing. CI only builds the library, the example app and the docs site, and runs none of them.
+- `pnpm dev:website` serves the site in `apps/docs`, and `pnpm site build` builds it. `pnpm typecheck` also type-checks it.
 - Install pods with `cd apps/example && bundle exec pod install --project-directory=ios`. A global `pod` can be a different CocoaPods version from the one the Gemfile resolves (1.15.2), and then it rewrites `Podfile.lock` and `project.pbxproj`.
 
 ## Dependencies
@@ -19,7 +20,9 @@
 ## Docs
 
 - `README.md`, `LICENSE` and `skills/` live at the root, and `prepack` copies them into the package. The copies under `packages/react-native-nitro-hinge/` are gitignored, so don't edit them.
-- The README examples are pasted verbatim from `apps/example/src/examples/*.tsx`, and `skills/react-native-nitro-hinge/` repeats the API and the examples. When the API or an example changes, update all three.
+- The README examples are pasted verbatim from `apps/example/src/examples/*.tsx`, `skills/react-native-nitro-hinge/` repeats the API and the examples, and `docs/examples/` holds the examples once more. When the API or an example changes, update all of them.
+- The site in `apps/docs` renders `docs/` and, as its Reference section, the skill's `references/`. A code block with `file=<path>` in its meta must match that file, or `pnpm site build` fails.
+- Pages in `docs/` link to the Reference section by route (`/reference/api/`), because it's a separate docs instance. A post-build script turns those links into absolute URLs in the Markdown copies and `llms-full.txt`.
 
 ## iOS
 

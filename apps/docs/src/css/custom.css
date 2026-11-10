@@ -1,0 +1,63 @@
+@import url('https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap');
+
+/* Brand: the logo's yellow on black. Yellow fails contrast as text on a
+   white page, so light mode uses a dark amber for links and buttons. */
+
+:root {
+  --hinge-yellow: #ffe500;
+  --hinge-ink: #000000;
+
+  --ifm-font-family-base: 'Geist', system-ui, -apple-system, sans-serif;
+  --ifm-font-family-monospace:
+    'Geist Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  --ifm-color-primary: #8a6d00;
+  --ifm-color-primary-dark: #7c6200;
+  --ifm-color-primary-darker: #755d00;
+  --ifm-color-primary-darkest: #604c00;
+  --ifm-color-primary-light: #987800;
+  --ifm-color-primary-lighter: #9f7d00;
+  --ifm-color-primary-lightest: #b48e00;
+
+  --ifm-code-font-size: 95%;
+  --ifm-navbar-shadow: 0 1px 0 var(--ifm-color-emphasis-200);
+  --docusaurus-highlighted-code-line-bg: rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] {
+  --ifm-background-color: var(--hinge-ink);
+  --ifm-background-surface-color: #181818;
+  --ifm-navbar-background-color: var(--hinge-ink);
+
+  --ifm-color-primary: #ffe500;
+  --ifm-color-primary-dark: #e6ce00;
+  --ifm-color-primary-darker: #d9c300;
+  --ifm-color-primary-darkest: #b3a000;
+  --ifm-color-primary-light: #ffe81a;
+  --ifm-color-primary-lighter: #ffea26;
+  --ifm-color-primary-lightest: #ffee4d;
+
+  --docusaurus-highlighted-code-line-bg: rgba(255, 255, 255, 0.1);
+}
+
+/* Primary buttons keep the brand yellow with black text in both themes. */
+.button--primary {
+  --ifm-button-background-color: var(--hinge-yellow);
+  --ifm-button-border-color: var(--hinge-yellow);
+  --ifm-button-color: var(--hinge-ink);
+}
+
+.button--primary:hover {
+  --ifm-button-background-color: #e6ce00;
+  --ifm-button-border-color: #e6ce00;
+}
+
+.footer--dark {
+  --ifm-footer-background-color: var(--hinge-ink);
+}
+
+/* Recordings sit on a white page in light mode, so they get a thin outline. */
+.theme-doc-markdown img {
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px var(--ifm-color-emphasis-200);
+}
